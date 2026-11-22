@@ -364,6 +364,7 @@ function normalizeOFF(prod, source) {
     nutriscore: (prod.nutriscore_grade || prod.nutrition_grades || "").toLowerCase().replace(/[^a-e]/g, "") || null,
     isDrink,
     category: (prod.categories || "").split(",").slice(-1)[0]?.trim() || "",
+    catTags: (prod.categories_tags || []).filter(t => typeof t === "string"),
   };
   p.hasData = !!(ingText || hasNutr || p.allergenTags.length);
   return p;

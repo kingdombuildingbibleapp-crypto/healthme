@@ -671,6 +671,87 @@
     $("resultDialog").scrollTop = 0;
     if (!opts.example && !opts.fromHistory) addHistory(p, code, source);
   }
+  // ---------- Recommended / Also try ----------
+  // Pull products from the same category (same open database), rate each one for this person,
+  // and show healthier swaps (Recommended) or other good picks (Also try).
+  const suggestCache = new Map();
+  const STOP = new Set("the and with for of in a an oz fl ml g kg lb ct pack count size new original classic".split(" "));
+  function baseFor(p) {
+    const key = SOURCES.some(s => s[0] === p.source) ? p.source : { food: "food", cosmetic: "beauty", pet: "pet" }[p.kind] || "products";
+    return SOURCES.find(s => s[0] === key);
+  }
+  function searchWords(p) {
+    const brand = (p.brand || "").toLowerCase();
+    return (p.name || "").toLowerCase().replace(/[^a-z\s]/g, " ").split(/\s+/)
+      .filter(w => w.length > 2 && !STOP.has(w) && !brand.includes(w)).slice(-3).join(" ");
+  }
+  async function findSuggestions(p, code, conds) {
+    const [srcKey, base] = baseFor(p);
+    const urls = [];
+    // Most specific *product type* first. Skip property-style categories ("sweetened beverages",
+    // "diet", "organic"...) and very broad ones, which would match unrelated products.
+    const PROPERTY = /(sweetened|diet|artificially|sugar|light|low-|reduced|organic|bio|vegan|vegetarian|gluten|lactose|fair-trade|with-|without-|-and-|preparations|non-alcoholic|plant-based|fermented|frozen|dried|canned|refrigerated|imported|^en:(beverages|foods|snacks|drinks|meals|groceries|cosmetics|products)$)/;
+    const tags = (p.catTags || []).filter(t => /^en:/.test(t) && !PROPERTY.test(t)).slice(-2).reverse();
+    // products sold in the US first (popular worldwide lists are mostly European), then worldwide.
+    // At most 3 searches: Open Food Facts allows about 10 searches a minute per phone.
+    const q = (t, us) => `${base}/api/v2/search?categories_tags=${encodeURIComponent(t)}${us ? "&countries_tags=en:united-states" : ""}&fields=${FIELDS}&page_size=40&sort_by=popularity_key`;
+    if (tags[0]) urls.push(q(tags[0], true));
+    if (tags[1]) urls.push(q(tags[1], true));
+    if (tags[0]) urls.push(q(tags[0], false));
+    const words = searchWords(p);
+    if (!urls.length && words) urls.push(`${base}/cgi/search.pl?search_terms=${encodeURIComponent(words)}&search_simple=1&action=process&json=1&page_size=40&fields=${FIELDS}`);
+    const seen = new Set([code, (p.name + "|" + p.brand).toLowerCase()]), out = [];
+    for (const u of urls) {
+      let j; try { j = await fetchJSON(u, 12000); } catch { continue; }
+      for (const prod of j.products || []) {
+        if (!prod || !prod.code || !(prod.product_name || prod.product_name_en)) continue;
+        const cp = normalizeOFF(prod, srcKey);
+        const key = (cp.name + "|" + cp.brand).toLowerCase();
+        if (!cp.hasData || seen.has(prod.code) || seen.has(key)) continue;
+        seen.add(prod.code); seen.add(key);
+        out.push({ p: cp, code: prod.code, source: srcKey, a: analyze(cp, conds) });
+      }
+      if (out.filter(x => x.a.verdict === "good").length >= 6) break;
+    }
+    return out;
+  }
+  async function renderSuggestions(pr, a) {
+    const box = $("rSuggest"), cur = current;
+    if (!cur || cur.opts.example || cur.source === "manual") { box.hidden = true; return; }
+    const good = a.verdict === "good", who = P.displayName(pr);
+    $("rSuggestTitle").textContent = good ? "Also try" : "Recommended";
+    $("rSuggestSub").textContent = good ? `Other good picks for ${who === "You" ? "you" : who}` : `Healthier swaps for ${who === "You" ? "you" : who}`;
+    box.className = "suggest " + (good ? "s-also" : "s-rec");
+    box.hidden = false;
+    $("rSuggestList").innerHTML = '<li class="sg-skel"></li><li class="sg-skel"></li><li class="sg-skel"></li>';
+    const conds = P.effective(pr), key = `${cur.code}|${pr.id}|${conds.map(c => c.id).join(",")}`;
+    let list = suggestCache.get(key);
+    if (!list) {
+      try { list = await findSuggestions(cur.p, cur.code, conds); } catch { list = []; }
+      suggestCache.set(key, list);
+    }
+    if (current !== cur || cur.viewId !== pr.id) return;     // the person or product changed while loading
+    const min = good ? 70 : Math.max(70, a.overall + 10);
+    let picks = list.filter(x => x.a.overall >= min).sort((x, y) => y.a.overall - x.a.overall);
+    if (!good && !picks.length) picks = list.filter(x => x.a.overall >= a.overall + 15).sort((x, y) => y.a.overall - x.a.overall);
+    picks = picks.slice(0, 8);
+    if (!picks.length) {
+      $("rSuggestList").innerHTML = `<li class="sg-none">${good ? "No other matches found in this category yet." : "We couldn't find a better match in this category yet. Check the reasons below for what to look for on the label."}</li>`;
+      return;
+    }
+    cur.suggest = picks;
+    $("rSuggestList").innerHTML = picks.map((x, i) => `<li><button class="sg-card v-${x.a.verdict}" data-i="${i}">
+        <span class="sg-img">${x.p.image ? `<img src="${esc(x.p.image)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ICON.pkg}</span>
+        <span class="sg-score">${ring(x.a.overall, x.a.verdict, "sm")}<b>${x.a.overall}%</b></span>
+        <span class="sg-name">${esc(x.p.name)}</span><span class="sg-brand">${esc(x.p.brand)}</span>
+      </button></li>`).join("");
+  }
+  $("rSuggestList").addEventListener("click", e => {
+    const b = e.target.closest(".sg-card"); if (!b || !current?.suggest) return;
+    const x = current.suggest[+b.dataset.i];
+    showResult(x.p, x.code, x.source);
+  });
+
   function renderResultFor(pid, first) {
     current.viewId = pid;
     const fam = current.family;
@@ -682,6 +763,7 @@
     const worstIdx = a.results.findIndex(r => r.score === a.overall);
     renderPerCond(a, worstIdx);
     renderVerdict(a.results[worstIdx], entry.pr, a.results.length > 1, first);
+    renderSuggestions(entry.pr, a);
   }
   $("rFamily").addEventListener("click", e => {
     const b = e.target.closest(".fs"); if (!b || !current) return;
