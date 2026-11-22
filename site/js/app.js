@@ -701,8 +701,9 @@
     const words = searchWords(p);
     if (!urls.length && words) urls.push(`${base}/cgi/search.pl?search_terms=${encodeURIComponent(words)}&search_simple=1&action=process&json=1&page_size=40&fields=${FIELDS}`);
     const seen = new Set([code, (p.name + "|" + p.brand).toLowerCase()]), out = [];
+    let failed = 0;
     for (const u of urls) {
-      let j; try { j = await fetchJSON(u, 12000); } catch { continue; }
+      let j; try { j = await fetchJSON(u, 15000); } catch { failed++; continue; }
       for (const prod of j.products || []) {
         if (!prod || !prod.code || !(prod.product_name || prod.product_name_en)) continue;
         const cp = normalizeOFF(prod, srcKey);
@@ -713,6 +714,7 @@
       }
       if (out.filter(x => x.a.verdict === "good").length >= 6) break;
     }
+    if (urls.length && failed === urls.length) { const e = new Error("search unavailable"); e.retry = true; throw e; }
     return out;
   }
   async function renderSuggestions(pr, a) {
@@ -725,12 +727,16 @@
     box.hidden = false;
     $("rSuggestList").innerHTML = '<li class="sg-skel"></li><li class="sg-skel"></li><li class="sg-skel"></li>';
     const conds = P.effective(pr), key = `${cur.code}|${pr.id}|${conds.map(c => c.id).join(",")}`;
-    let list = suggestCache.get(key);
+    let list = suggestCache.get(key), failedNow = false;
     if (!list) {
-      try { list = await findSuggestions(cur.p, cur.code, conds); } catch { list = []; }
-      suggestCache.set(key, list);
+      try { list = await findSuggestions(cur.p, cur.code, conds); suggestCache.set(key, list); }
+      catch { list = []; failedNow = true; }
     }
     if (current !== cur || cur.viewId !== pr.id) return;     // the person or product changed while loading
+    if (failedNow) {
+      $("rSuggestList").innerHTML = `<li class="sg-none">Couldn't load suggestions right now. <button class="link-btn sg-retry" type="button">Try again</button></li>`;
+      return;
+    }
     const min = good ? 70 : Math.max(70, a.overall + 10);
     let picks = list.filter(x => x.a.overall >= min).sort((x, y) => y.a.overall - x.a.overall);
     if (!good && !picks.length) picks = list.filter(x => x.a.overall >= a.overall + 15).sort((x, y) => y.a.overall - x.a.overall);
@@ -747,6 +753,7 @@
       </button></li>`).join("");
   }
   $("rSuggestList").addEventListener("click", e => {
+    if (e.target.closest(".sg-retry") && current) { const en = current.family.find(f => f.pr.id === current.viewId); return renderSuggestions(en.pr, en.a); }
     const b = e.target.closest(".sg-card"); if (!b || !current?.suggest) return;
     const x = current.suggest[+b.dataset.i];
     showResult(x.p, x.code, x.source);
