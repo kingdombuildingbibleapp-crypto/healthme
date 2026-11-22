@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>HealthyScan</title>
-<meta name="description" content="Pick any health condition, scan any product's barcode, and see how good or bad it is for you.">
-<meta name="theme-color" content="#F3F6F4" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0E1513" media="(prefers-color-scheme: dark)">
+<meta name="description" content="Scan any product's barcode and see how good it is for you and your family's health conditions.">
+<meta name="theme-color" content="#E9ECF6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16141B" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="HealthyScan">
@@ -15,132 +15,182 @@
 <link rel="apple-touch-icon" href="/icons/icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@500;700&display=swap">
 <link rel="stylesheet" href="/css/app.css">
 </head>
 <body>
-<div class="app">
-  <header class="top">
-    <div class="brand">
-      <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="9" fill="var(--accent)"/><path d="M9 16.5l4.5 4.5L23 11" fill="none" stroke="var(--on-accent)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span class="wordmark">Healthy<b>Scan</b></span>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <div class="blobs" aria-hidden="true"><span class="b1"></span><span class="b2"></span><span class="b3"></span></div>
+  <div class="hero-inner">
+    <div class="top">
+      <div class="brand">
+        <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="9" fill="var(--accent)"/><path d="M9 16.5l4.5 4.5L23 11" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="wordmark">Healthy<b>Scan</b></span>
+      </div>
+      <button class="hero-icon" id="menuBtn" aria-label="Profiles and backup">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 21a8 8 0 0 1 16 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
     </div>
-    <button class="icon-btn" id="historyBtn" aria-label="Scan history">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7v5l3 2M3.5 12a8.5 8.5 0 1 0 2.5-6M3 4v4h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
-  </header>
 
-  <main>
-    <!-- Conditions -->
-    <section class="conditions" aria-labelledby="condLabel">
-      <div class="row-between">
-        <h2 id="condLabel" class="eyebrow">Checking products for</h2>
-        <span class="count" id="condCount"></span>
-      </div>
-      <button class="cond-picker" id="openPicker" aria-haspopup="dialog">
-        <span id="condSummary" class="cond-summary">Choose your condition</span>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <p class="greet-eyebrow" id="greetEyebrow">Shopping for</p>
+    <h1 class="greet" id="greetName">You</h1>
+
+    <div class="family" id="family" role="tablist" aria-label="Who are you shopping for?"></div>
+
+    <div class="scan-stage">
+      <button class="scan-orb" id="scanBtn" aria-label="Scan a barcode">
+        <span class="ring r1"></span><span class="ring r2"></span><span class="ring r3"></span>
+        <span class="orb-core">
+          <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 14V9a3 3 0 0 1 3-3h5M34 6h5a3 3 0 0 1 3 3v5M42 34v5a3 3 0 0 1-3 3h-5M14 42H9a3 3 0 0 1-3-3v-5" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/><path d="M14 15v18M19 15v18M24 15v18M30 15v18M35 15v18" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+          <b>Scan</b>
+        </span>
       </button>
-      <div class="chips" id="condChips"></div>
-      <button class="record-btn" id="openRecord">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z M14 3v5h5 M9 13h6 M9 17h4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span><b id="recordBtnTitle">Import from medical record</b><small id="recordBtnSub">More accurate ratings. Read on this phone only.</small></span>
-      </button>
-    </section>
-
-    <!-- Scanner -->
-    <section class="scanner" aria-label="Barcode scanner">
-      <div class="viewport" id="viewport">
-        <div id="reader"></div>
-        <div class="idle" id="scanIdle">
-          <div class="bars" aria-hidden="true"></div>
-          <p>Point your camera at any barcode — food, skincare, cleaning supplies, anything.</p>
-        </div>
-        <div class="frame" aria-hidden="true"><i></i><i></i><i></i><i></i><span class="laser"></span></div>
+      <p class="orb-hint" id="orbHint">Food, skincare, cleaners, anything with a barcode</p>
+      <div class="hero-alts">
+        <button class="pill" id="typeBtn">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Type number</button>
+        <label class="pill" for="photoInput">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+          Use a photo</label>
+        <input type="file" id="photoInput" accept="image/*" hidden>
       </div>
-      <div class="scan-actions">
-        <button class="btn primary" id="scanBtn">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 8v8M10 8v8M13 8v8M17 8v8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          <span id="scanBtnText">Scan a barcode</span>
-        </button>
-        <div class="alt-actions">
-          <button class="btn ghost" id="typeBtn">Type number</button>
-          <label class="btn ghost" for="photoInput">Use a photo</label>
-          <input type="file" id="photoInput" accept="image/*" capture="environment" hidden>
-        </div>
+    </div>
+  </div>
+</header>
+
+<main class="app">
+  <!-- ============ HEALTH CARD ============ -->
+  <section class="health-card" aria-labelledby="healthTitle">
+    <div class="hc-head">
+      <span class="avatar lg" id="hcAvatar"></span>
+      <div class="hc-titles">
+        <h2 id="healthTitle">Your health profile</h2>
+        <p class="muted small" id="hcSub"></p>
       </div>
-      <p class="status" id="status" role="status" aria-live="polite"></p>
-    </section>
+      <button class="btn small ghost" id="editProfileBtn">Edit</button>
+    </div>
+    <div class="cond-tiles" id="condTiles"></div>
+    <div class="hc-actions">
+      <button class="btn primary" id="openPicker">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
+        <span id="pickerBtnText">Add conditions</span></button>
+      <button class="btn" id="openRecord">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span id="recordBtnTitle">Import record</span></button>
+    </div>
+    <p class="saved-note">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+      <span>Saved on this phone, so you set it up once. Nothing is uploaded.</span>
+    </p>
+  </section>
 
-    <!-- Recent -->
-    <section class="recent">
-      <div class="row-between">
-        <h2 class="eyebrow" id="recentTitle">Examples</h2>
-        <button class="link" id="clearHistory" hidden>Clear</button>
-      </div>
-      <ul class="recent-list" id="recentList"></ul>
-    </section>
+  <p class="status" id="status" role="status" aria-live="polite"></p>
 
-    <p class="fineprint">HealthyScan gives general guidance from ingredient and nutrition data. It isn't medical advice and can miss things. Always read the label and follow your doctor's advice, especially for allergies.</p>
-  </main>
-</div>
+  <!-- ============ RECENT ============ -->
+  <section class="recent" aria-labelledby="recentTitle">
+    <div class="row-between">
+      <h2 class="section-title" id="recentTitle">Try an example</h2>
+      <button class="link" id="clearHistory" hidden>Clear</button>
+    </div>
+    <ul class="recent-rail" id="recentList"></ul>
+  </section>
 
-<!-- Condition picker -->
+  <!-- ============ HOW IT WORKS ============ -->
+  <section class="how" aria-labelledby="howTitle">
+    <h2 class="section-title" id="howTitle">Every product gets a verdict</h2>
+    <div class="verdict-trio">
+      <div class="vt v-good"><span class="vt-mark"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><b>70–100%</b><span>Good for you</span></div>
+      <div class="vt v-medium"><span class="vt-mark"><svg viewBox="0 0 24 24"><path d="M5 12h14" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg></span><b>40–69%</b><span>Use with caution</span></div>
+      <div class="vt v-bad"><span class="vt-mark"><svg viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></span><b>0–39%</b><span>Not recommended</span></div>
+    </div>
+    <ul class="how-list">
+      <li><b>318 conditions</b> to choose from, plus allergies and medications</li>
+      <li><b>Whole-family check:</b> one scan rates the product for everyone</li>
+      <li><b>Kid-safe rules</b> applied automatically by your child's age</li>
+    </ul>
+  </section>
+
+  <p class="fineprint">HealthyScan gives general guidance from ingredient and nutrition data. It isn't medical advice and can miss things. Always read the label and follow your doctor's advice, especially for allergies.</p>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<!-- ============ CAMERA ============ -->
+<dialog class="camera" id="camera" aria-label="Barcode camera">
+  <div id="reader"></div>
+  <div class="cam-frame" aria-hidden="true"><i></i><i></i><i></i><i></i><span class="laser"></span></div>
+  <div class="cam-top">
+    <button class="cam-btn" id="camClose" aria-label="Close camera"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
+    <span class="cam-for" id="camFor"></span>
+  </div>
+  <div class="cam-bottom">
+    <p id="camMsg">Line the barcode up inside the frame</p>
+    <div class="cam-alts">
+      <button class="pill" id="camType">Type number</button>
+      <label class="pill" for="photoInput">Use a photo</label>
+    </div>
+  </div>
+</dialog>
+
+<!-- ============ PROFILE EDITOR ============ -->
+<dialog class="sheet" id="profileDialog" aria-labelledby="profileTitle">
+  <form id="profileForm" method="dialog">
+    <div class="sheet-head"><h2 id="profileTitle">Profile</h2><button type="button" class="btn small ghost" data-close>Cancel</button></div>
+    <label class="field-label" for="pName">Name</label>
+    <input class="field" id="pName" required maxlength="30" placeholder="e.g. Maya" autocomplete="off">
+    <span class="field-label" id="pKindLabel">Who is this?</span>
+    <div class="seg" role="radiogroup" aria-labelledby="pKindLabel">
+      <label><input type="radio" name="pKind" value="self" checked><span>Me</span></label>
+      <label><input type="radio" name="pKind" value="adult"><span>Another adult</span></label>
+      <label><input type="radio" name="pKind" value="child"><span>A child</span></label>
+    </div>
+    <div id="pChildWrap" hidden>
+      <label class="field-label" for="pBirth">Birth month</label>
+      <input class="field" id="pBirth" type="month">
+      <p class="picker-hint" id="pAgeHint">Kid-safe rules are added based on age: less sugar, salt and caffeine, no honey under 1, gentler skincare.</p>
+    </div>
+    <span class="field-label">Color</span>
+    <div class="swatches" id="pColors"></div>
+    <button class="btn primary wide" type="submit" id="pSave">Save profile</button>
+    <button class="btn ghost wide danger-text" type="button" id="pDelete" hidden>Delete this profile</button>
+  </form>
+</dialog>
+
+<!-- ============ MENU / BACKUP ============ -->
+<dialog class="sheet" id="menuDialog" aria-labelledby="menuTitle">
+  <div class="sheet-head"><h2 id="menuTitle">Family profiles</h2><button class="btn small ghost" data-close>Close</button></div>
+  <ul class="profile-list" id="profileList"></ul>
+  <button class="btn wide" id="menuAdd">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
+    Add a family member</button>
+  <h3 class="section-title small-title">Backup</h3>
+  <p class="picker-hint">Profiles live only on this phone. Save a backup file to move them to a new phone or keep them safe.</p>
+  <div class="two-col">
+    <button class="btn" id="backupBtn">Save backup</button>
+    <label class="btn" for="restoreInput">Restore</label>
+    <input type="file" id="restoreInput" accept=".json,application/json" hidden>
+  </div>
+  <p class="status" id="menuStatus" role="status" aria-live="polite"></p>
+</dialog>
+
+<!-- ============ CONDITION PICKER ============ -->
 <dialog class="sheet" id="picker" aria-labelledby="pickerTitle">
   <div class="sheet-head">
-    <h2 id="pickerTitle">Your conditions</h2>
+    <h2 id="pickerTitle">Conditions</h2>
     <button class="btn small" id="pickerDone">Done</button>
   </div>
   <div class="search">
     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-    <input id="condSearch" type="search" placeholder="Search any illness, disorder, allergy…" autocomplete="off" enterkeyhint="search">
+    <input id="condSearch" type="search" placeholder="Search any illness, allergy, medication…" autocomplete="off" enterkeyhint="search">
   </div>
   <p class="picker-hint" id="pickerHint">Pick one or more. Products are rated against all of them.</p>
   <div class="cond-list" id="condList" role="listbox" aria-multiselectable="true"></div>
 </dialog>
 
-<!-- Medical record -->
-<dialog class="sheet" id="recordDialog" aria-labelledby="recordTitle">
-  <div class="sheet-head">
-    <h2 id="recordTitle">Medical record</h2>
-    <button class="btn small ghost" data-close>Close</button>
-  </div>
-  <div class="privacy">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-    <p><b>Your record never leaves this phone.</b> HealthyScan reads it here, shows you what it found, and keeps only the conditions you approve. The file itself isn't saved or uploaded.</p>
-  </div>
-
-  <div id="recordStep1">
-    <label class="drop" for="recordFile">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <b>Choose a file or take a photo</b>
-      <small>Visit summary, lab results, or patient-portal download.<br>PDF, photo, CCD/XML, FHIR JSON or text.</small>
-    </label>
-    <input type="file" id="recordFile" accept=".pdf,image/*,.txt,.xml,.ccd,.cda,.json,.htm,.html,.csv,text/plain,application/pdf" hidden>
-    <details class="paste">
-      <summary>Or paste text from your patient portal</summary>
-      <label class="field-label" for="recordPaste">Problem list, allergies, medications or lab results</label>
-      <textarea class="field" id="recordPaste" rows="6" placeholder="Problems: Type 2 diabetes mellitus, Essential hypertension&#10;Allergies: Peanuts (anaphylaxis)&#10;Medications: atorvastatin 20 mg&#10;LDL 168 mg/dL"></textarea>
-      <button class="btn primary wide" id="recordPasteGo" type="button">Find conditions</button>
-    </details>
-    <p class="status" id="recordStatus" role="status" aria-live="polite"></p>
-  </div>
-
-  <div id="recordStep2" hidden>
-    <p class="picker-hint" id="recordSummary"></p>
-    <div id="recordFindings"></div>
-    <button class="btn primary wide" id="recordApply">Add to my conditions</button>
-    <button class="btn ghost wide" id="recordAgain" type="button">Read a different record</button>
-  </div>
-
-  <div class="record-saved" id="recordSaved" hidden>
-    <p class="small muted" id="recordSavedText"></p>
-    <button class="link danger" id="recordForget" type="button">Remove everything added from records</button>
-  </div>
-  <p class="fineprint">Automatic reading can miss or misread things, so check the list before you add it. HealthyScan doesn't diagnose anything.</p>
-</dialog>
-
-<!-- Manual barcode -->
+<!-- ============ MANUAL BARCODE ============ -->
 <dialog class="sheet small-sheet" id="typeDialog" aria-labelledby="typeTitle">
   <form id="typeForm" method="dialog">
     <div class="sheet-head"><h2 id="typeTitle">Enter barcode</h2><button type="button" class="btn small ghost" data-close>Cancel</button></div>
@@ -150,7 +200,7 @@
   </form>
 </dialog>
 
-<!-- Not found / manual product -->
+<!-- ============ NOT FOUND / MANUAL PRODUCT ============ -->
 <dialog class="sheet" id="manualDialog" aria-labelledby="manualTitle">
   <form id="manualForm" method="dialog">
     <div class="sheet-head"><h2 id="manualTitle">Add product details</h2><button type="button" class="btn small ghost" data-close>Cancel</button></div>
@@ -170,11 +220,49 @@
   </form>
 </dialog>
 
-<!-- Result -->
+<!-- ============ MEDICAL RECORD ============ -->
+<dialog class="sheet" id="recordDialog" aria-labelledby="recordTitle">
+  <div class="sheet-head">
+    <h2 id="recordTitle">Medical record</h2>
+    <button class="btn small ghost" data-close>Close</button>
+  </div>
+  <div class="privacy">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+    <p><b>The record never leaves this phone.</b> HealthyScan reads it here, shows you what it found, and saves only what you approve to this profile. The file itself isn't kept or uploaded.</p>
+  </div>
+  <div id="recordStep1">
+    <label class="drop" for="recordFile">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <b>Choose a file or take a photo</b>
+      <small>Visit summary, lab results, or patient-portal download.<br>PDF, photo, CCD/XML, FHIR JSON or text.</small>
+    </label>
+    <input type="file" id="recordFile" accept=".pdf,image/*,.txt,.xml,.ccd,.cda,.json,.htm,.html,.csv,text/plain,application/pdf" hidden>
+    <details class="paste">
+      <summary>Or paste text from a patient portal</summary>
+      <label class="field-label" for="recordPaste">Problem list, allergies, medications or lab results</label>
+      <textarea class="field" id="recordPaste" rows="6" placeholder="Problems: Type 2 diabetes mellitus, Essential hypertension&#10;Allergies: Peanuts (anaphylaxis)&#10;Medications: atorvastatin 20 mg&#10;LDL 168 mg/dL"></textarea>
+      <button class="btn primary wide" id="recordPasteGo" type="button">Find conditions</button>
+    </details>
+    <p class="status" id="recordStatus" role="status" aria-live="polite"></p>
+  </div>
+  <div id="recordStep2" hidden>
+    <p class="picker-hint" id="recordSummary"></p>
+    <div id="recordFindings"></div>
+    <button class="btn primary wide" id="recordApply">Add to profile</button>
+    <button class="btn ghost wide" id="recordAgain" type="button">Read a different record</button>
+  </div>
+  <div class="record-saved" id="recordSaved" hidden>
+    <p class="small muted" id="recordSavedText"></p>
+    <button class="link danger" id="recordForget" type="button">Remove everything added from records</button>
+  </div>
+  <p class="fineprint">Automatic reading can miss or misread things, so check the list before you add it. HealthyScan doesn't diagnose anything.</p>
+</dialog>
+
+<!-- ============ RESULT ============ -->
 <dialog class="sheet result-sheet" id="resultDialog" aria-labelledby="rName">
   <div class="sheet-head">
     <span class="eyebrow" id="rSource"></span>
-    <button class="btn small" id="resultClose">Scan next</button>
+    <button class="btn small primary-soft" id="resultClose">Scan next</button>
   </div>
   <div class="product">
     <div class="thumb" id="rThumb"></div>
@@ -184,12 +272,13 @@
       <p id="rCode" class="mono muted small"></p>
     </div>
   </div>
+  <div class="family-strip" id="rFamily"></div>
   <div class="verdict" id="rVerdict">
     <div class="mark" id="rMark" aria-hidden="true"></div>
     <div class="reading">
       <div class="pct mono"><span id="rPct">0</span><small>%</small></div>
       <div class="verdict-word" id="rWord"></div>
-      <div class="muted small" id="rFor"></div>
+      <div class="small" id="rFor"></div>
     </div>
     <div class="meter" aria-hidden="true"><span id="rMeter"></span></div>
   </div>
@@ -208,6 +297,7 @@
 <script src="/js/engine.js"></script>
 <script src="/js/records.js"></script>
 <script src="/js/samples.js"></script>
+<script src="/js/profiles.js"></script>
 <script src="/js/app.js"></script>
 </body>
 </html>
