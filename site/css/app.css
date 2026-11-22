@@ -532,3 +532,4 @@ dialog.sheet > .btn.wide { display: flex; width: calc(100% - 40px); }
 .save-list { list-style: none; margin: 14px 0 6px; padding: 0; display: grid; gap: 8px; }
 .save-list li { display: flex; align-items: center; gap: 10px; font-weight: 600; }
 .save-list li svg { flex: none; width: 20px; height: 20px; color: var(--good, #1F9D5B); }
+.logo-badge { display: block; width: 62px; height: 62px; border-radius: 15px; box-shadow: 0 8px 18px -8px rgba(184, 58, 14, .7); }
