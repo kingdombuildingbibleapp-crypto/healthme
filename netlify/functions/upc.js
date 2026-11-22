@@ -1,4 +1,4 @@
-// Looks up general (non-food) products by barcode via UPCitemdb's free trial API.
+// Looks up general (non-food) products by barcode, or by a code with letters (model number, ASIN), via UPCitemdb's free trial API.
 // Runs server-side because that API doesn't allow direct browser requests.
 const json = (status, body, cache = "no-store") => ({
   statusCode: status,
@@ -6,10 +6,15 @@ const json = (status, body, cache = "no-store") => ({
   body: JSON.stringify(body),
 });
 exports.handler = async (event) => {
-  const code = (event.queryStringParameters && event.queryStringParameters.code) || "";
-  if (!/^\d{6,14}$/.test(code)) return json(400, { error: "Invalid barcode" });
+  const qs = event.queryStringParameters || {};
+  const code = qs.code || "", q = (qs.q || "").trim();
+  let url;
+  if (/^\d{6,14}$/.test(code)) url = `https://api.upcitemdb.com/prod/trial/lookup?upc=${code}`;
+  // product codes with letters (model numbers, ASINs): text search
+  else if (/^[A-Za-z0-9][A-Za-z0-9.\-\/]{2,39}$/.test(q)) url = `https://api.upcitemdb.com/prod/trial/search?s=${encodeURIComponent(q)}&match_mode=0&type=product`;
+  else return json(400, { error: "Invalid code" });
   try {
-    const r = await fetch(`https://api.upcitemdb.com/prod/trial/lookup?upc=${code}`, {
+    const r = await fetch(url, {
       headers: { accept: "application/json", "user-agent": "HealthyScan/1.0" },
     });
     if (r.status === 429) return json(429, { error: "Lookup limit reached, try later" });

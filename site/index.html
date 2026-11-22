@@ -201,9 +201,9 @@
 <!-- ============ MANUAL BARCODE ============ -->
 <dialog class="sheet small-sheet" id="typeDialog" aria-labelledby="typeTitle">
   <form id="typeForm" method="dialog">
-    <div class="sheet-head"><h2 id="typeTitle">Enter barcode</h2><button type="button" class="btn small ghost" data-close>Cancel</button></div>
-    <label class="field-label" for="codeInput">The numbers under the barcode</label>
-    <input class="field mono" id="codeInput" inputmode="numeric" placeholder="e.g. 0 49000 02891 1" required autocomplete="off">
+    <div class="sheet-head"><h2 id="typeTitle">Enter product code</h2><button type="button" class="btn small ghost" data-close>Cancel</button></div>
+    <label class="field-label" for="codeInput">The numbers under the barcode, or any product code with letters</label>
+    <input class="field mono" id="codeInput" type="text" inputmode="text" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="search" maxlength="40" placeholder="e.g. 049000028911 or B07XJ8C8F5" required autocomplete="off">
     <p class="status bad-text" id="codeErr" role="alert" hidden></p>
     <button class="btn primary wide" type="submit">Check product</button>
   </form>

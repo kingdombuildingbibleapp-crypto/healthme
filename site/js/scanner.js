@@ -54,6 +54,8 @@
     const gs1 = t.match(/\/01\/(\d{14})(?:\/|\?|$)/) || t.match(/^\(01\)(\d{14})/) || t.match(/^\u001d?01(\d{14})/);
     if (gs1 && gtinOk(gs1[1])) return { code: gs1[1], strong: true };
     const d = t.replace(/[\s-]/g, "");
+    // codes with letters (Code 128 / Code 39 model numbers): no check digit, so require two matching reads
+    if (/[a-z]/i.test(t)) return /code(128|39)/.test(fmt) && /^[A-Z0-9][A-Z0-9.\-\/]{3,29}$/i.test(t) ? { code: t.toUpperCase(), strong: false } : null;
     if (!/^\d{6,14}$/.test(d)) return null;
     if (fmt.includes("upce") && d.length <= 8) return expandUpcE(d.padStart(8, "0")) ? { code: d.padStart(8, "0"), strong: true } : null;
     const retail = /ean|upc|gtin/.test(fmt);

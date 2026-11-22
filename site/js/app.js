@@ -326,7 +326,14 @@
   $("typeBtn").addEventListener("click", openTypeDialog);
   $("typeForm").addEventListener("submit", e => {
     e.preventDefault();
-    const code = $("codeInput").value.replace(/\D/g, "");
+    const raw = $("codeInput").value.trim();
+    if (/[a-z]/i.test(raw)) {
+      // product codes with letters (model numbers, Amazon ASINs, store codes) are searched by text
+      const text = raw.replace(/\s+/g, "").toUpperCase();
+      if (!/^[A-Z0-9][A-Z0-9.\-\/]{2,39}$/.test(text)) return showTypeError("Use only letters, numbers and dashes, at least 3 characters.");
+      $("typeDialog").close(); return checkCode(text);
+    }
+    const code = raw.replace(/\D/g, "");
     if (code.length < 6 || code.length > 14) return showTypeError("Type all the numbers under the barcode. Most have 12 or 13 digits.");
     if ((code.length === 12 || code.length === 13) && !S.gtinOk(code)) return showTypeError("That number doesn't add up. One digit may be off, so check it against the package.");
     $("typeDialog").close(); checkCode(code);
@@ -371,12 +378,20 @@
     } catch {}
     return null;
   }
+  async function lookupText(q) {
+    try {
+      const j = await fetchJSON(`/api/upc?q=${encodeURIComponent(q)}`, 10000);
+      if (j && j.title) return { source: "upc", generic: j };
+    } catch {}
+    return null;
+  }
   async function checkCode(raw) {
     const code = String(raw).trim();
-    if (!/^\d{6,14}$/.test(code)) return toast(`That code isn't a product barcode. Try the barcode on the package.`, 5000);
+    const isText = /[A-Z]/i.test(code);
+    if (isText ? !/^[A-Z0-9][A-Z0-9.\-\/]{2,39}$/i.test(code) : !/^\d{6,14}$/.test(code)) return toast(`That code isn't a product code. Try the barcode on the package.`, 5000);
     toast(`<span class="spinner"></span>Looking up <span class="mono">${esc(code)}</span>…`, 0);
     let found = null;
-    try { found = await lookup(code); } catch {}
+    try { found = isText ? await lookupText(code) : await lookup(code); } catch {}
     $("toast").hidden = true;
     if (!found) {
       if (!navigator.onLine) return toast("You're offline. Connect to the internet to look up products.", 5000);
