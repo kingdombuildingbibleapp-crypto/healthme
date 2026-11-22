@@ -179,6 +179,21 @@
   </form>
 </dialog>
 
+<!-- ============ HOW IT AFFECTS A CONDITION ============ -->
+<dialog class="sheet cond-sheet" id="condDialog" aria-labelledby="cdTitle">
+  <div class="sheet-head"><div><span class="eyebrow">How this product affects</span><h2 id="cdTitle"></h2></div><button class="btn small ghost" data-close>Close</button></div>
+  <div class="cd-product"><span class="cd-thumb" id="cdThumb"></span><div><b id="cdName"></b><small id="cdBrand"></small></div></div>
+  <div class="cd-verdict" id="cdVerdict"><span id="cdRing"></span><div><b id="cdScore"></b><span id="cdWord"></span></div></div>
+  <p class="cd-summary" id="cdSummary"></p>
+  <p class="cd-intro" id="cdIntro"></p>
+  <h3 class="eyebrow" id="cdFoundTitle">What we found</h3>
+  <ul class="cd-list" id="cdFound"></ul>
+  <div id="cdCheckedWrap"><h3 class="eyebrow">Also checked: none found</h3><div class="cd-chips" id="cdChecked"></div></div>
+  <p class="cd-look" id="cdLook" hidden></p>
+  <button class="btn primary wide" id="cdBetter" hidden>See healthier swaps</button>
+  <p class="fineprint">Based on the ingredient list and nutrition label. General education, not medical advice. Ask your doctor or dietitian what's right for you.</p>
+</dialog>
+
 <!-- ============ RECOMMENDATIONS ============ -->
 <dialog class="sheet rec-sheet" id="recDialog" aria-labelledby="recTitle">
   <div class="sheet-head"><h2 id="recTitle">Recommendations</h2><button class="btn small ghost" data-close>Close</button></div>
@@ -425,6 +440,7 @@
     </div>
     <div class="meter" aria-hidden="true"><span id="rMeter"></span></div>
   </div>
+  <button class="explain-btn" id="rExplain" type="button"></button>
   <div class="per-cond" id="rPerCond"></div>
   <section class="suggest" id="rSuggest" hidden aria-live="polite">
     <div class="suggest-head"><h3 id="rSuggestTitle">Recommended</h3><span class="suggest-sub" id="rSuggestSub"></span></div>
@@ -443,6 +459,7 @@
 <script src="/js/scanner.js"></script>
 <script src="/js/conditions.js"></script>
 <script src="/js/engine.js"></script>
+<script src="/js/explain.js"></script>
 <script src="/js/records.js"></script>
 <script src="/js/ehr.js"></script>
 <script src="/js/samples.js"></script>

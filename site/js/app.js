@@ -1,6 +1,6 @@
 (() => {
   const { CONDITIONS, findConditions, customCondition } = window.HM_CONDITIONS;
-  const { analyze, normalizeOFF, normalizeGeneric } = window.HM_ENGINE;
+  const { analyze, normalizeOFF, normalizeGeneric, FACTORS } = window.HM_ENGINE;
   const P = window.HM_PROFILES;
   const $ = id => document.getElementById(id);
   const store = {
@@ -904,6 +904,66 @@
     $("recBtnSub").textContent = n ? `Products that are a good fit for ${mine ? "your" : who + "'s"} ${n} condition${n === 1 ? "" : "s"}` : "Add conditions to get personal picks";
   }
 
+  // ---------- How this product affects a condition ----------
+  const X = window.HM_EXPLAIN;
+  const VERDICT_FOR = { good: "Good for", medium: "Use with caution for", bad: "Not recommended for" };
+  function openCondDetail(r, pr) {
+    if (!r || !current) return;
+    const c = r.condition, p = current.p;
+    const cname = c.fallback ? "general health" : c.auto ? "kid-safe rules" : c.name;
+    $("cdTitle").textContent = c.fallback ? "General health" : c.auto ? "Kid-safe rules" : c.name;
+    $("cdThumb").innerHTML = p.image ? `<img src="${esc(p.image)}" alt="" referrerpolicy="no-referrer">` : ICON.pkg;
+    $("cdName").textContent = p.name; $("cdBrand").textContent = p.brand || "";
+    $("cdVerdict").className = "cd-verdict v-" + r.verdict;
+    $("cdRing").innerHTML = ring(r.score, r.verdict, "sm");
+    $("cdScore").textContent = r.score + "%";
+    const who = pr.kind === "self" ? "" : ` (${P.displayName(pr)})`;
+    $("cdWord").textContent = `${VERDICT_FOR[r.verdict]} ${cname}${who}`;
+    const bad = r.reasons.filter(x => !x.quiet && x.type !== "good"), good = r.reasons.filter(x => x.type === "good");
+    const top = bad.slice(0, 2).map(x => FACTORS[x.factor]?.label.toLowerCase() || x.text.toLowerCase());
+    // Do this condition's main triggers even apply to this kind of product? (eczema vs. a soda)
+    const applies = k => { const sc = FACTORS[k]?.scope; if (p.kind === "food" && (k === "formaldehyde" || k === "respiratory")) return false; return sc === "any" || (sc === "food" && p.kind === "food") || (sc === "topical" && (p.kind === "cosmetic" || p.kind === "household")) || (sc === "other" && p.kind === "other"); };
+    const mainKeys = Object.entries(c.factors || {}).filter(([k, w]) => w >= 2 && FACTORS[k] && !FACTORS[k].bonus && k !== "tobacco" && k !== "screen").map(([k]) => k);
+    const offTopic = !c.fallback && mainKeys.length && !mainKeys.some(applies);
+    const kindWord = { food: "foods and drinks", cosmetic: "skin and personal care products", household: "household products", pet: "pet products", other: "this kind of product" }[p.kind] || "this kind of product";
+    $("cdSummary").textContent = offTopic
+      ? `The main things that matter for ${cname} aren't usually found in ${kindWord}, so this score is a general health rating. ${r.verdict === "good" ? "Nothing here is a concern." : top.length ? `It loses points for ${top.join(" and ")}.` : ""}`
+      : r.verdict === "good" ? `${p.name} is a good fit for ${cname}${good.length && !good[0].quiet ? `, and it's ${good[0].text.toLowerCase()}` : ""}. Nothing in it is a major concern for this condition.`
+      : r.verdict === "medium" ? `${p.name} is okay now and then, but not ideal for ${cname}${top.length ? ` mainly because of ${top.join(" and ")}` : ""}.`
+      : `${p.name} isn't a good choice for ${cname}${top.length ? ` mainly because of ${top.join(" and ")}` : ""}.`;
+    $("cdIntro").textContent = c.fallback ? "No conditions are set, so this is a general health rating." : X.intro(c);
+    const items = [...bad, ...good.filter(x => !x.quiet)];
+    $("cdFoundTitle").hidden = !items.length;
+    $("cdFound").innerHTML = items.map(x => {
+      const f = FACTORS[x.factor], cls = x.type === "good" ? "v-good" : x.type === "bad" ? "v-bad" : "v-medium";
+      const icon = x.type === "good" ? ICON.good : x.type === "bad" ? ICON.bad : ICON.warn;
+      const expl = X.why(x.factor, f, cname, x.type, /traces/i.test(x.text));
+      const found = x.found?.length && !/listed allergen|may contain traces/.test(x.found[0]) ? `<span class="found">Found: ${esc(x.found.join(", "))}</span>` : "";
+      const imp = x.type === "good" ? "" : x.weight >= 3 ? '<span class="cd-imp">Big factor for this condition</span>' : x.weight >= 2 ? '<span class="cd-imp mid">Matters for this condition</span>' : "";
+      return `<li class="reason ${cls}"><span class="dot">${icon}</span><span><b>${esc(x.text)}</b>${imp}${found}${expl ? `<span class="cd-why">${esc(expl)}</span>` : ""}</span></li>`;
+    }).join("") || "";
+    if (!items.length) $("cdFound").innerHTML = `<li class="reason v-good"><span class="dot">${ICON.good}</span><span><b>No concerns found</b><span class="cd-why">${p.hasData ? "Nothing in the ingredients or nutrition label is a known problem for this condition." : "This product has no ingredient list in the database, so we rated it by product type."}</span></span></li>`;
+    // factors that matter for this condition and weren't found
+    const mentioned = new Set(r.reasons.filter(x => !x.quiet).map(x => x.factor));
+    const checked = Object.entries(c.factors || {}).filter(([k, w]) => w >= 2 && !mentioned.has(k) && FACTORS[k] && !FACTORS[k].bonus && k !== "screen" && (k !== "tobacco" || p.kind === "other"))
+      .sort((a, b) => b[1] - a[1]).slice(0, 10).map(([k]) => FACTORS[k].label);
+    $("cdCheckedWrap").hidden = !checked.length || !p.hasData;
+    $("cdChecked").innerHTML = checked.map(l => `<span class="cd-chip">${ICON.good}${esc(l)}</span>`).join("");
+    const help = HELP[X.profileOf(c)];
+    $("cdLook").hidden = !help || c.fallback;
+    if (help) $("cdLook").innerHTML = `<b>Tip for ${esc(cname)}:</b> look for ${esc(help.look.toLowerCase())}.`;
+    $("cdBetter").hidden = r.verdict === "good" || $("rSuggest").hidden;
+    $("condDialog").showModal();
+    $("condDialog").scrollTop = 0;
+  }
+  $("cdBetter").addEventListener("click", () => { $("condDialog").close(); $("rSuggest").scrollIntoView({ behavior: "smooth", block: "center" }); });
+  $("rExplain").addEventListener("click", () => {
+    if (!current) return;
+    const entry = current.family.find(f => f.pr.id === current.viewId);
+    const i = entry.a.results.findIndex(r => r.score === entry.a.overall);
+    openCondDetail(entry.a.results[i], entry.pr);
+  });
+
   function renderResultFor(pid, first) {
     current.viewId = pid;
     const fam = current.family;
@@ -915,6 +975,11 @@
     const worstIdx = a.results.findIndex(r => r.score === a.overall);
     renderPerCond(a, worstIdx);
     renderVerdict(a.results[worstIdx], entry.pr, a.results.length > 1, first);
+    const wr = a.results[worstIdx];
+    $("rExplain").innerHTML = a.results.length > 1
+      ? `Tap a condition below to see how this product affects it`
+      : `How this affects ${esc(wr.condition.fallback ? "general health" : wr.condition.auto ? "kid-safe rules" : wr.condition.name)} <span aria-hidden="true">›</span>`;
+    $("rExplain").classList.toggle("hint", a.results.length > 1);
     renderSuggestions(entry.pr, a);
   }
   $("rFamily").addEventListener("click", e => {
@@ -939,7 +1004,7 @@
   function renderPerCond(a, activeIdx) {
     if (a.results.length < 2) { $("rPerCond").innerHTML = ""; return; }
     $("rPerCond").innerHTML = a.results.map((r, i) => `<button class="pc-row v-${r.verdict}" data-i="${i}" aria-pressed="${i === activeIdx}">
-        <span class="mini">${ICON[r.verdict]}</span><span class="pc-name">${esc(r.condition.auto ? "Kid-safe rules" : r.condition.name)}</span><span class="pc-pct">${r.score}%</span></button>`).join("");
+        <span class="mini">${ICON[r.verdict]}</span><span class="pc-name">${esc(r.condition.auto ? "Kid-safe rules" : r.condition.name)}</span><span class="pc-pct">${r.score}%</span><span class="pc-more" aria-hidden="true">›</span></button>`).join("");
   }
   $("rPerCond").addEventListener("click", e => {
     const b = e.target.closest(".pc-row"); if (!b || !current) return;
@@ -947,6 +1012,7 @@
     const r = entry.a.results[Number(b.dataset.i)];
     $("rPerCond").querySelectorAll(".pc-row").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
     renderReasons(r, entry.pr);
+    openCondDetail(r, entry.pr);
   });
   function renderReasons(r, pr) {
     const entry = current.family.find(f => f.pr.id === current.viewId);

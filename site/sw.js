@@ -1,6 +1,6 @@
 // Caches the app shell so HealthyScan opens instantly and works offline (lookups still need a connection).
-const CACHE = "healthyscan-v24";
-const SHELL = ["/", "/index.html", "/css/app.css", "/js/conditions.js", "/js/engine.js", "/js/records.js", "/js/profiles.js", "/js/account.js", "/js/ehr.js", "/css/fonts.css", "/js/samples.js", "/js/app.js", "/js/scanner.js", "/vendor/zxing/zxing-reader.min.js", "/img/bg-food.webp", "/img/bg-products.webp", "/icons/icon.svg", "/manifest.webmanifest"];
+const CACHE = "healthyscan-v25";
+const SHELL = ["/", "/index.html", "/css/app.css", "/js/conditions.js", "/js/engine.js", "/js/explain.js", "/js/records.js", "/js/profiles.js", "/js/account.js", "/js/ehr.js", "/css/fonts.css", "/js/samples.js", "/js/app.js", "/js/scanner.js", "/vendor/zxing/zxing-reader.min.js", "/img/bg-food.webp", "/img/bg-products.webp", "/icons/icon.svg", "/manifest.webmanifest"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener("fetch", e => {

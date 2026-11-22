@@ -606,3 +606,30 @@ dialog.sheet > .btn.wide { display: flex; width: calc(100% - 40px); }
 .rec-look { display: inline-block; margin-top: 6px; padding: 3px 10px; border-radius: 999px; background: rgba(255,255,255,.75); font-size: .8rem; font-weight: 700; color: #17694A; }
 .app > .rec-entry:first-child { margin-top: 0; }
 .app { position: relative; z-index: 1; }
+
+/* ---------- how a product affects a condition ---------- */
+.explain-btn { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; margin: 10px 0 0; padding: 12px 14px; border-radius: 16px; border: 1.5px solid rgba(61,123,255,.35); background: rgba(61,123,255,.08); color: #1F4FD1; font: 700 .95rem/1.2 var(--f-body); cursor: pointer; }
+.explain-btn.hint { border-style: dashed; background: transparent; color: var(--ink-2); font-weight: 600; font-size: .88rem; cursor: default; }
+.pc-row { position: relative; }
+.pc-more { margin-left: 4px; font-size: 1.3rem; line-height: 1; color: var(--ink-2); }
+.cond-sheet { max-height: 86vh; }
+.cond-sheet .sheet-head h2 { margin: 2px 0 0; font: 800 1.25rem/1.2 var(--f-display); }
+.cd-product { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+.cd-thumb { flex: none; width: 52px; height: 52px; border-radius: 12px; background: #fff; display: grid; place-items: center; overflow: hidden; color: var(--ink-2); }
+.cd-thumb img { width: 100%; height: 100%; object-fit: contain; } .cd-thumb svg { width: 26px; height: 26px; }
+.cd-product b { display: block; line-height: 1.25; } .cd-product small { color: var(--ink-2); }
+.cd-verdict { display: flex; align-items: center; gap: 12px; margin-top: 12px; padding: 12px 14px; border-radius: 16px; }
+.cd-verdict.v-good { background: var(--good-soft, rgba(31,157,91,.12)); } .cd-verdict.v-medium { background: var(--mid-soft, rgba(242,190,69,.15)); } .cd-verdict.v-bad { background: var(--bad-soft, rgba(210,63,44,.12)); }
+.cd-verdict b { display: block; font: 800 1.4rem/1 var(--f-mono); } .cd-verdict span { font-weight: 700; }
+.cd-verdict .ring { width: 44px; height: 44px; }
+.cd-summary { margin: 12px 0 4px; font-size: 1rem; font-weight: 600; line-height: 1.45; }
+.cd-intro { margin: 0 0 10px; color: var(--ink-2); font-size: .9rem; line-height: 1.45; }
+.cd-list { list-style: none; margin: 6px 0 12px; padding: 0; display: grid; gap: 8px; }
+.cd-why { display: block; margin-top: 4px; color: var(--ink-2); font-size: .88rem; line-height: 1.45; }
+.cd-imp { display: inline-block; margin: 4px 0 0 0; padding: 1px 8px; border-radius: 999px; background: rgba(210,63,44,.12); color: #A8321F; font-size: .72rem; font-weight: 800; }
+.cd-imp.mid { background: rgba(242,190,69,.2); color: #8A6200; }
+.cd-list .reason > span:last-child { display: grid; justify-items: start; }
+.cd-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 12px; }
+.cd-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; background: rgba(31,157,91,.1); font-size: .8rem; font-weight: 700; }
+.cd-chip svg { width: 14px; height: 14px; color: var(--good, #1F9D5B); }
+.cd-look { margin: 4px 0 12px; padding: 10px 12px; border-radius: 14px; background: rgba(61,123,255,.08); font-size: .9rem; }
