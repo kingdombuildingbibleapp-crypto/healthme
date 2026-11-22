@@ -1,8 +1,8 @@
-# HealthMe
+# HealthyScan
 
 Pick any health condition, scan the barcode on any product, and see how good or bad it is for you: a green check, a yellow line or a red X, with a percentage and the reasons why.
 
-**Live app:** https://healthme-scan-12785.netlify.app
+**Live app:** https://healthyscan.net
 
 It works on food and drinks, skincare and cosmetics, cleaning products, pet food, and general products.
 
@@ -49,4 +49,4 @@ Connect this repository to Netlify. `netlify.toml` sets the publish folder and f
 
 ## Disclaimer
 
-HealthMe gives general guidance from ingredient and nutrition data. It is not medical advice and can miss things. Always read the label and follow your doctor's advice, especially for allergies.
+HealthyScan gives general guidance from ingredient and nutrition data. It is not medical advice and can miss things. Always read the label and follow your doctor's advice, especially for allergies.

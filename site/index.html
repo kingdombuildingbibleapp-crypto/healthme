@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>HealthMe</title>
+<title>HealthyScan</title>
 <meta name="description" content="Pick any health condition, scan any product's barcode, and see how good or bad it is for you.">
 <meta name="theme-color" content="#F3F6F4" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0E1513" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="HealthMe">
+<meta name="apple-mobile-web-app-title" content="HealthyScan">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/icons/icon-180.png">
@@ -23,7 +23,7 @@
   <header class="top">
     <div class="brand">
       <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="9" fill="var(--accent)"/><path d="M9 16.5l4.5 4.5L23 11" fill="none" stroke="var(--on-accent)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span class="wordmark">Health<b>Me</b></span>
+      <span class="wordmark">Healthy<b>Scan</b></span>
     </div>
     <button class="icon-btn" id="historyBtn" aria-label="Scan history">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7v5l3 2M3.5 12a8.5 8.5 0 1 0 2.5-6M3 4v4h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -81,7 +81,7 @@
       <ul class="recent-list" id="recentList"></ul>
     </section>
 
-    <p class="fineprint">HealthMe gives general guidance from ingredient and nutrition data. It isn't medical advice and can miss things. Always read the label and follow your doctor's advice, especially for allergies.</p>
+    <p class="fineprint">HealthyScan gives general guidance from ingredient and nutrition data. It isn't medical advice and can miss things. Always read the label and follow your doctor's advice, especially for allergies.</p>
   </main>
 </div>
 
@@ -107,7 +107,7 @@
   </div>
   <div class="privacy">
     <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-    <p><b>Your record never leaves this phone.</b> HealthMe reads it here, shows you what it found, and keeps only the conditions you approve. The file itself isn't saved or uploaded.</p>
+    <p><b>Your record never leaves this phone.</b> HealthyScan reads it here, shows you what it found, and keeps only the conditions you approve. The file itself isn't saved or uploaded.</p>
   </div>
 
   <div id="recordStep1">
@@ -137,7 +137,7 @@
     <p class="small muted" id="recordSavedText"></p>
     <button class="link danger" id="recordForget" type="button">Remove everything added from records</button>
   </div>
-  <p class="fineprint">Automatic reading can miss or misread things, so check the list before you add it. HealthMe doesn't diagnose anything.</p>
+  <p class="fineprint">Automatic reading can miss or misread things, so check the list before you add it. HealthyScan doesn't diagnose anything.</p>
 </dialog>
 
 <!-- Manual barcode -->

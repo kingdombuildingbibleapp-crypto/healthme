@@ -1,4 +1,4 @@
-/* HealthMe scoring engine.
+/* HealthyScan scoring engine.
    A product is normalized to: { kind, name, brand, ingredients, tags, nutriments, nova, nutriscore, labels, isDrink }
    Each factor inspects the product and returns a severity 0..1 plus what triggered it. */
 

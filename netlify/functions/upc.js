@@ -10,7 +10,7 @@ exports.handler = async (event) => {
   if (!/^\d{6,14}$/.test(code)) return json(400, { error: "Invalid barcode" });
   try {
     const r = await fetch(`https://api.upcitemdb.com/prod/trial/lookup?upc=${code}`, {
-      headers: { accept: "application/json", "user-agent": "HealthMe/1.0" },
+      headers: { accept: "application/json", "user-agent": "HealthyScan/1.0" },
     });
     if (r.status === 429) return json(429, { error: "Lookup limit reached, try later" });
     const j = await r.json();

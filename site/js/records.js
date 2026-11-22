@@ -1,4 +1,4 @@
-/* HealthMe medical-record reader.
+/* HealthyScan medical-record reader.
    Everything here runs on the device. The record's text is never sent anywhere and never stored;
    only the findings the user confirms are kept (as condition selections). */
 (() => {

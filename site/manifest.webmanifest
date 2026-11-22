@@ -1,6 +1,6 @@
 {
-  "name": "HealthMe",
-  "short_name": "HealthMe",
+  "name": "HealthyScan",
+  "short_name": "HealthyScan",
   "description": "Scan any product's barcode and see how good it is for your health condition.",
   "start_url": "/",
   "display": "standalone",

@@ -1,4 +1,4 @@
-/* HealthMe condition library.
+/* HealthyScan condition library.
    Each condition maps to "factors" (things in a product that matter for it) with a weight 1–3.
    Format per line:  Name | PROFILE+PROFILE | factor:weight factor:weight | alias, alias
    Factors are defined in engine.js. Negative-meaning factors (fiber, skinsoothe, acnehelp) are bonuses. */
