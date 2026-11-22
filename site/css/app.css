@@ -588,3 +588,21 @@ dialog.sheet > .btn.wide { display: flex; width: calc(100% - 40px); }
 .sg-img { height: 132px; padding: 6px; border: 1px solid rgba(0,0,0,.05); }
 .sg-skel { width: 156px; height: 240px; }
 .sg-retry { display: inline; margin: 0 0 0 4px; padding: 0; }
+
+/* ---------- Recommendations based on my condition ---------- */
+.rec-entry { width: 100%; margin: 14px 0 4px; display: flex; align-items: center; gap: 14px; padding: 16px; border: 0; border-radius: 22px; text-align: left; color: #fff; font: inherit; cursor: pointer;
+  background: linear-gradient(120deg, #1F9D5B 0%, #19A6A0 45%, #3D7BFF 100%); box-shadow: 0 14px 28px -14px rgba(31,120,140,.8); }
+.rec-entry:active { transform: scale(.99); }
+.rec-entry-icon { flex: none; width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; background: rgba(255,255,255,.22); }
+.rec-entry-icon svg { width: 26px; height: 26px; color: #FFE14D; }
+.rec-entry-text { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.rec-entry-text b { font: 800 1.05rem/1.25 var(--f-display); }
+.rec-entry-text small { opacity: .92; font-size: .86rem; }
+.rec-entry-arrow { flex: none; width: 22px; height: 22px; }
+.rec-sheet { max-height: 92vh; }
+.rec-sec { margin: 14px 0 0; padding: 12px 0 4px; border-radius: 20px; background: linear-gradient(135deg, rgba(31,157,91,.10), rgba(61,123,255,.07)); }
+.rec-sec-head { padding: 0 14px 8px; }
+.rec-sec-head h3 { margin: 0; font: 800 1.05rem/1.25 var(--f-display); }
+.rec-look { display: inline-block; margin-top: 6px; padding: 3px 10px; border-radius: 999px; background: rgba(255,255,255,.75); font-size: .8rem; font-weight: 700; color: #17694A; }
+.app > .rec-entry:first-child { margin-top: 0; }
+.app { position: relative; z-index: 1; }

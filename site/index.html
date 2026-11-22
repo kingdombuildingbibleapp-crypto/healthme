@@ -65,6 +65,12 @@
 </header>
 
 <main class="app">
+  <!-- ============ RECOMMENDATIONS ENTRY ============ -->
+  <button class="rec-entry" id="recBtn">
+    <span class="rec-entry-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l2.3 5.2 5.7.6-4.3 3.8 1.3 5.6L12 15.3 7 18.2l1.3-5.6L4 8.8l5.7-.6z" fill="currentColor"/></svg></span>
+    <span class="rec-entry-text"><b id="recBtnTitle">Recommendations based on my condition</b><small id="recBtnSub">Products that are a good fit for you</small></span>
+    <svg class="rec-entry-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
   <!-- ============ HEALTH CARD ============ -->
   <section class="health-card" aria-labelledby="healthTitle">
     <div class="hc-head">
@@ -86,9 +92,10 @@
     </div>
     <p class="saved-note">
       <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-      <span>Saved on this phone, so you set it up once. Nothing is uploaded.</span>
+      <span>Saved on this phone, so you set it up once. With an account, an encrypted copy is saved too.</span>
     </p>
   </section>
+
 
   <p class="status" id="status" role="status" aria-live="polite"></p>
 
@@ -170,6 +177,14 @@
     <button class="btn primary wide" type="submit" id="pSave">Save profile</button>
     <button class="btn ghost wide danger-text" type="button" id="pDelete" hidden>Delete this profile</button>
   </form>
+</dialog>
+
+<!-- ============ RECOMMENDATIONS ============ -->
+<dialog class="sheet rec-sheet" id="recDialog" aria-labelledby="recTitle">
+  <div class="sheet-head"><h2 id="recTitle">Recommendations</h2><button class="btn small ghost" data-close>Close</button></div>
+  <p class="picker-hint" id="recIntro"></p>
+  <div id="recSections"></div>
+  <p class="fineprint">Suggestions are everyday products that fit the label guidelines commonly given for each condition, rated against all of this person's conditions and allergies. They don't treat or cure any condition and aren't medical advice. Check with your doctor or dietitian, and double-check labels. Product data and photos: Open Food Facts and Open Beauty Facts (ODbL).</p>
 </dialog>
 
 <!-- ============ ACCOUNT ============ -->

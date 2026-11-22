@@ -44,6 +44,7 @@
 
   // ---------- home ----------
   function renderHome() {
+    renderRecEntry();
     const me = P.active();
     const name = P.displayName(me);
     $("greetEyebrow").textContent = name === "You" ? "Hi there! Shopping for" : "Shopping for";
@@ -758,6 +759,150 @@
     const x = current.suggest[+b.dataset.i];
     showResult(x.p, x.code, x.source);
   });
+
+  // ---------- Recommendations based on my condition ----------
+  // For each kind of condition: what to look for, and which product categories to pull from.
+  // Every product is then rated against ALL of the person's conditions and allergies.
+  const HELP = {
+    DIAB:   { look: "High fiber, low sugar", db: "food", tags: ["en:nuts", "en:lentils", "en:oat-flakes", "en:chickpeas"] },
+    HEART:  { look: "Low sodium, healthy fats, fiber", db: "food", tags: ["en:extra-virgin-olive-oils", "en:oat-flakes", "en:sardines", "en:nuts"] },
+    BP:     { look: "Low sodium", db: "food", tags: ["en:frozen-vegetables", "en:oat-flakes", "en:nuts"] },
+    KIDNEY: { look: "Lower sodium and phosphorus", db: "food", tags: ["en:rices", "en:frozen-vegetables"] },
+    LIVER:  { look: "Low sugar, whole foods", db: "food", tags: ["en:oat-flakes", "en:coffees"] },
+    IBS:    { look: "Gentle, low-FODMAP friendly", db: "food", tags: ["en:rices", "en:quinoa"] },
+    IBD:    { look: "Simple, low additive", db: "food", tags: ["en:rices", "en:oat-flakes"] },
+    GERD:   { look: "Low acid, not spicy", db: "food", tags: ["en:oat-flakes", "en:herbal-teas"] },
+    SKIN:   { look: "Fragrance-free, gentle", db: "beauty", tags: ["en:body-creams", "en:hand-creams", "en:face-creams"] },
+    ACNE:   { look: "Non-comedogenic, oil-free", db: "beauty", tags: ["en:face-creams"] },
+    RESP:   { look: "Fragrance-free, no harsh fumes", db: "beauty", tags: ["en:hand-creams", "en:body-creams"] },
+    CHEM:   { look: "Fragrance-free", db: "beauty", tags: ["en:hand-creams", "en:body-creams"] },
+    CANCER: { look: "Whole foods, high fiber", db: "food", tags: ["en:lentils", "en:oat-flakes", "en:nuts"] },
+    HORM:   { look: "Simple ingredients", db: "food", tags: ["en:oat-flakes", "en:nuts"] },
+    MIGR:   { look: "No MSG, nitrites or aspartame", db: "food", tags: ["en:herbal-teas", "en:oat-flakes"] },
+    ADHD:   { look: "No artificial dyes, low sugar", db: "food", tags: ["en:oat-flakes", "en:nuts"] },
+    ANX:    { look: "Caffeine-free", db: "food", tags: ["en:herbal-teas", "en:decaffeinated-coffees", "en:nuts"] },
+    MOOD:   { look: "Whole foods, low sugar", db: "food", tags: ["en:nuts", "en:oat-flakes"] },
+    SLEEP:  { look: "Caffeine-free", db: "food", tags: ["en:herbal-teas"] },
+    WEIGHT: { look: "High fiber, fewer calories", db: "food", tags: ["en:frozen-vegetables", "en:greek-yogurts", "en:lentils"] },
+    GOUT:   { look: "Low purine, low sugar", db: "food", tags: ["en:oat-flakes", "en:rices"] },
+    PREG:   { look: "Pregnancy-friendly basics", db: "food", tags: ["en:oat-flakes", "en:lentils"] },
+    AUTO:   { look: "Low sugar and salt, whole foods", db: "food", tags: ["en:nuts", "en:oat-flakes"] },
+    BONE:   { look: "Calcium-rich, low sodium", db: "food", tags: ["en:greek-yogurts", "en:milks"] },
+    HIST:   { look: "Low histamine", db: "food", tags: ["en:rices", "en:oat-flakes"] },
+    STONE:  { look: "Low oxalate and sodium", db: "food", tags: ["en:rices", "en:milks"] },
+    NEURO:  { look: "Whole foods, healthy fats", db: "food", tags: ["en:nuts", "en:extra-virgin-olive-oils"] },
+    FATIG:  { look: "Whole foods, low sugar", db: "food", tags: ["en:nuts", "en:oat-flakes"] },
+    BLADDER:{ look: "Low acid, caffeine-free", db: "food", tags: ["en:herbal-teas", "en:rices"] },
+    DENTAL: { look: "Sugar-free", db: "food", tags: ["en:sparkling-waters", "en:nuts"] },
+    INFECT: { look: "Whole foods, fiber", db: "food", tags: ["en:lentils", "en:oat-flakes"] },
+    EYE:    { look: "Whole foods, healthy fats", db: "food", tags: ["en:nuts", "en:extra-virgin-olive-oils"] },
+    HEAR:   { look: "Low sodium", db: "food", tags: ["en:oat-flakes", "en:nuts"] },
+    GEN:    { look: "Whole foods, high fiber", db: "food", tags: ["en:oat-flakes", "en:nuts"] },
+  };
+  const REC_TTL = 24 * 3600e3;
+  const recMem = new Map();
+  async function recProducts(db, tag) {
+    const k = db + "|" + tag;
+    if (recMem.has(k)) return recMem.get(k);
+    try { const c = JSON.parse(localStorage.getItem("hm:rec:" + k) || "null"); if (c && Date.now() - c.t < REC_TTL) { recMem.set(k, c.p); return c.p; } } catch {}
+    const base = SOURCES.find(x => x[0] === db)[1];
+    const us = db === "food" ? "&countries_tags=en:united-states" : "";
+    const url = `${base}/api/v2/search?categories_tags=${encodeURIComponent(tag)}${us}&fields=${FIELDS}&page_size=40&sort_by=popularity_key`;
+    let j;
+    try { j = await fetchJSON(url, 15000); }
+    catch { await new Promise(r => setTimeout(r, 2500)); j = await fetchJSON(url, 15000); }   // the databases are sometimes busy: one retry
+    const list = (j.products || []).filter(x => x && x.code && (x.product_name || x.product_name_en));
+    recMem.set(k, list);
+    try { localStorage.setItem("hm:rec:" + k, JSON.stringify({ t: Date.now(), p: list })); } catch {}
+    return list;
+  }
+  function recGroups(pr) {
+    const groups = new Map();
+    for (const c of P.effective(pr)) {
+      if (c.custom) continue;
+      const prof = (c.profiles || []).find(x => HELP[x] && x !== "GEN") || ((c.profiles || []).includes("NONE") ? null : "GEN");
+      if (!prof) continue;                                    // allergy-only conditions just filter, they don't add a section
+      if (!groups.has(prof)) groups.set(prof, { prof, help: HELP[prof], conds: [] });
+      groups.get(prof).conds.push(c);
+    }
+    if (!groups.size) groups.set("GEN", { prof: "GEN", help: HELP.GEN, conds: [] });
+    return [...groups.values()].slice(0, 6);
+  }
+  let recRun = 0;
+  async function openRecommendations() {
+    const pr = P.active(), mine = pr.kind === "self", who = mine ? "You" : P.displayName(pr);
+    const run = ++recRun;
+    $("recTitle").textContent = mine ? "Recommendations for my conditions" : `Recommendations for ${who}`;
+    const chosen = P.chosen(pr);
+    $("recIntro").textContent = chosen.length
+      ? `Good fits for ${mine ? "your" : who + "'s"} ${chosen.length} condition${chosen.length === 1 ? "" : "s"}. Every product is also checked against ${mine ? "your" : "their"} other conditions and allergies. Tap one to see why.`
+      : `Add conditions for personal picks. For now, here are products that score well for general health.`;
+    const groups = recGroups(pr);
+    const conds = P.effective(pr);
+    $("recSections").innerHTML = groups.map((g, i) => `<section class="rec-sec" id="recSec${i}">
+        <div class="rec-sec-head"><h3>${esc(g.conds.length ? g.conds.map(c => c.auto ? "Kid-safe rules" : c.name).join(", ") : "General health")}</h3>
+          <span class="rec-look">Look for: ${esc(g.help.look)}</span></div>
+        <ul class="suggest-rail" id="recList${i}"><li class="sg-skel"></li><li class="sg-skel"></li><li class="sg-skel"></li></ul>
+      </section>`).join("");
+    if (!$("recDialog").open) $("recDialog").showModal();
+    $("recDialog").scrollTop = 0;
+    const shown = new Set();
+    // one group at a time, so we stay well inside the databases' search limits
+    for (let i = 0; i < groups.length; i++) {
+      if (run !== recRun || !$("recDialog").open) return;
+      const g = groups[i], perTag = [];
+      let failed = 0;
+      for (const tag of g.help.tags) {
+        let list; try { list = await recProducts(g.help.db, tag); } catch { failed++; continue; }
+        const picks = [];
+        for (const prod of list) {
+          if (shown.has(prod.code)) continue;
+          const cp = normalizeOFF(prod, g.help.db);
+          if (!cp.hasData) continue;
+          const a = analyze(cp, conds);
+          if (a.overall < 70) continue;                        // must be good for the whole person
+          const focus = g.conds.length ? analyze(cp, g.conds).overall : a.overall;
+          picks.push({ p: cp, code: prod.code, source: g.help.db, a, focus });
+        }
+        picks.sort((x, y) => (!!y.p.image - !!x.p.image) || (y.focus - x.focus) || (y.a.overall - x.a.overall));
+        perTag.push(picks);
+      }
+      if (run !== recRun) return;
+      const el = $("recList" + i); if (!el) return;
+      // mix categories (max 3 each) and skip near-duplicates ("Organic Garbanzo Beans" twice)
+      const seen = new Set(), top = [];
+      const simKey = x => x.p.name.toLowerCase().replace(/organic|natural|original|classic|[^a-z ]/g, " ").split(/\s+/).filter(Boolean).slice(0, 2).join(" ") + "|" + x.p.brand.toLowerCase();
+      for (let round = 0; round < 3 && top.length < 8; round++)
+        for (const list of perTag) {
+          while (list.length && top.length < 8) {
+            const x = list.shift(), k = simKey(x);
+            if (seen.has(k)) continue;
+            seen.add(k); top.push(x); break;
+          }
+        }
+      top.forEach(x => shown.add(x.code));
+      g.picks = top;
+      el.innerHTML = top.length ? top.map((x, j) => `<li><button class="sg-card v-${x.a.verdict}" data-g="${i}" data-i="${j}">
+          <span class="sg-img">${x.p.image ? `<img src="${esc(x.p.image)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ICON.pkg}</span>
+          <span class="sg-score">${ring(x.a.overall, x.a.verdict, "sm")}<b>${x.a.overall}%</b></span>
+          <span class="sg-name">${esc(x.p.name)}</span><span class="sg-brand">${esc(x.p.brand)}</span></button></li>`).join("")
+        : failed === g.help.tags.length ? `<li class="sg-none">Couldn't load these right now. <button class="link-btn sg-retry rec-retry" type="button">Try again</button></li>`
+        : `<li class="sg-none">No products in our databases score well for every one of ${mine ? "your" : "their"} conditions here yet.</li>`;
+    }
+    $("recSections").groups = groups;
+  }
+  $("recBtn").addEventListener("click", openRecommendations);
+  $("recSections").addEventListener("click", e => {
+    if (e.target.closest(".rec-retry")) return openRecommendations();
+    const b = e.target.closest(".sg-card"); if (!b) return;
+    const g = $("recSections").groups?.[+b.dataset.g]; const x = g?.picks?.[+b.dataset.i]; if (!x) return;
+    showResult(x.p, x.code, x.source);
+  });
+  function renderRecEntry() {
+    const pr = P.active(), mine = pr.kind === "self", who = P.displayName(pr), n = P.chosen(pr).length;
+    $("recBtnTitle").textContent = mine ? "Recommendations based on my condition" : `Recommendations for ${who}`;
+    $("recBtnSub").textContent = n ? `Products that are a good fit for ${mine ? "your" : who + "'s"} ${n} condition${n === 1 ? "" : "s"}` : "Add conditions to get personal picks";
+  }
 
   function renderResultFor(pid, first) {
     current.viewId = pid;

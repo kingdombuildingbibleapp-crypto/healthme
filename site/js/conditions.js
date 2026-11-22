@@ -419,7 +419,7 @@ function parseConditions() {
     for (const k of Object.keys(factors)) if (factors[k] === 0) delete factors[k];
     out.push({
       id: name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
-      name, category, factors,
+      name, category, factors, profiles: profs.split("+").map(x => x.trim()),
       aliases: alias.split(",").map(s => s.trim().toLowerCase()).filter(Boolean),
     });
   }
