@@ -196,15 +196,48 @@
     P.setActive(b.dataset.pid); renderHome(); $("menuDialog").close();
   });
   $("menuAdd").addEventListener("click", () => openProfileEditor(null, "child"));
-  $("backupBtn").addEventListener("click", () => {
+  function downloadBackup() {
     const blob = new Blob([P.exportData()], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = `healthyscan-backup-${new Date().toISOString().slice(0, 10)}.json`;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  }
+  $("backupBtn").addEventListener("click", () => {
+    downloadBackup();
     $("menuStatus").textContent = "Backup saved to your downloads. Keep it private: it contains health information.";
   });
+
+  // ---------- Save ----------
+  const isStandalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  async function doSave() {
+    const r = await P.saveNow();
+    const all = P.all();
+    const conds = all.reduce((n, p) => n + P.chosen(p).length, 0), photos = all.filter(p => P.validPhoto(p.photo)).length;
+    $("saveHeadline").textContent = r.ok ? "Saved on this phone" : "Couldn't save: this phone's storage is full";
+    $("saveWhen").textContent = r.ok ? `Just now, ${new Date(r.at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}` : "Free up space, or save a backup file below.";
+    $("saveList").innerHTML = [
+      `${all.length} profile${all.length === 1 ? "" : "s"}: ${all.map(p => esc(P.displayName(p))).join(", ")}`,
+      `${conds} condition${conds === 1 ? "" : "s"}, allergies and medications`,
+      `${photos} profile photo${photos === 1 ? "" : "s"}`,
+      `Conditions found in imported medical records`,
+    ].map(t => `<li>${ICON.good || ""}<span>${t}</span></li>`).join("");
+    const tips = [];
+    tips.push(r.persisted ? "Protected: your browser has agreed not to clear HealthyScan's data." : "Saved in two places on this phone, so it's harder to lose.");
+    if (isIOS) tips.push(isStandalone()
+      ? "Always open HealthyScan from this home-screen icon. Safari keeps a separate copy."
+      : "Tip: on iPhone, Safari and a home-screen icon keep separate copies. Pick one way to open HealthyScan and stick with it, or use a backup file to move between them.");
+    $("saveNote").textContent = tips.join(" ");
+    $("saveStatus").textContent = "";
+    $("saveDialog").showModal();
+    $("saveBtn").classList.add("just-saved"); setTimeout(() => $("saveBtn").classList.remove("just-saved"), 1600);
+  }
+  $("saveBtn").addEventListener("click", doSave);
+  $("saveFileBtn").addEventListener("click", () => { downloadBackup(); $("saveStatus").textContent = "Backup file saved to your downloads or Files app."; });
+  // if profiles were brought back from the second copy, show them
+  P.ready.then(restored => { if (restored) { renderHome(); toast("Welcome back! Your saved profiles were restored.", 4000); } });
   $("restoreInput").addEventListener("change", async e => {
     const f = e.target.files?.[0]; e.target.value = ""; if (!f) return;
     try {

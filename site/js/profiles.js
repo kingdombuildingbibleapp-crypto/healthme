@@ -10,8 +10,26 @@
   const write = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } };
   const uid = () => "p" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
+  // Second copy in IndexedDB. If the browser clears localStorage (or it's a fresh start),
+  // we can bring profiles back from here.
+  const idbOpen = () => new Promise((res, rej) => {
+    if (!("indexedDB" in window)) return rej(new Error("no idb"));
+    const r = indexedDB.open("healthyscan", 1);
+    r.onupgradeneeded = () => r.result.createObjectStore("kv");
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  });
+  const idbPut = (k, v) => idbOpen().then(db => new Promise((res, rej) => {
+    const t = db.transaction("kv", "readwrite"); t.objectStore("kv").put(v, k);
+    t.oncomplete = () => res(true); t.onerror = () => rej(t.error);
+  }));
+  const idbGet = k => idbOpen().then(db => new Promise((res, rej) => {
+    const r = db.transaction("kv").objectStore("kv").get(k); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  }));
+  let idbReady = false, lastSaved = read("hm:lastSaved", null);
+
   let profiles = read(KEY, null);
-  if (!Array.isArray(profiles) || !profiles.length) {
+  const fresh = !Array.isArray(profiles) || !profiles.length;
+  if (fresh) {
     // First run, or upgrade from the single-profile version: move saved conditions into "Me"
     profiles = [{
       id: uid(), name: "Me", kind: "self", color: COLORS[0],
@@ -25,7 +43,35 @@
   let activeId = read(ACTIVE, profiles[0].id);
   if (!profiles.some(p => p.id === activeId)) activeId = profiles[0].id;
 
-  const save = () => { const ok = write(KEY, profiles); write(ACTIVE, activeId); return ok; };
+  const save = () => {
+    const ok = write(KEY, profiles); write(ACTIVE, activeId);
+    lastSaved = Date.now(); write("hm:lastSaved", lastSaved);
+    if (idbReady) idbPut("state", { profiles, activeId, savedAt: lastSaved }).catch(() => {});
+    return ok;
+  };
+  // On a fresh start, look for a copy in IndexedDB before anything overwrites it
+  const ready = (async () => {
+    try {
+      const st = await idbGet("state");
+      if (fresh && st && Array.isArray(st.profiles) && st.profiles.length) {
+        profiles = st.profiles; activeId = profiles.some(p => p.id === st.activeId) ? st.activeId : profiles[0].id;
+        write(KEY, profiles); write(ACTIVE, activeId);
+        idbReady = true; return true;
+      }
+    } catch {}
+    idbReady = true;
+    idbPut("state", { profiles, activeId, savedAt: lastSaved || Date.now() }).catch(() => {});
+    return false;
+  })();
+  // Explicit save: write both copies and ask the browser not to clear our data
+  async function saveNow() {
+    await ready;
+    const ok = save();
+    let second = false, persisted = false;
+    try { second = await idbPut("state", { profiles, activeId, savedAt: lastSaved }); } catch {}
+    try { if (navigator.storage?.persist) persisted = (await navigator.storage.persisted()) || (await navigator.storage.persist()); } catch {}
+    return { ok, second, persisted, at: lastSaved };
+  }
 
   function ageMonths(p) {
     if (p.kind !== "child" || !p.birth) return null;
@@ -60,7 +106,7 @@
   }
 
   const api = {
-    COLORS,
+    COLORS, ready, saveNow, lastSaved: () => lastSaved,
     all: () => profiles,
     get: id => profiles.find(p => p.id === id),
     active: () => profiles.find(p => p.id === activeId),

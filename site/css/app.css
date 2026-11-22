@@ -515,3 +515,20 @@ dialog.sheet > .btn.wide { display: flex; width: calc(100% - 40px); }
 @media (prefers-reduced-motion: reduce) {
   .sc-food, .sc-prod, .sc-glow { animation: none; }
 }
+
+/* ---------- Save ---------- */
+.top-actions { display: flex; align-items: center; gap: 10px; }
+.save-btn { display: inline-flex; align-items: center; gap: 7px; height: 46px; padding: 0 18px 0 14px; border: 0; border-radius: 999px;
+  background: var(--accent); color: #fff; font: 800 1rem/1 var(--f-display); box-shadow: 0 8px 18px -8px var(--accent); transition: transform .15s ease, background .3s ease; }
+.save-btn svg { width: 20px; height: 20px; }
+.save-btn:active { transform: scale(.96); }
+.save-btn.just-saved { background: var(--good, #1F9D5B); }
+.save-hero { display: flex; align-items: center; gap: 14px; margin-top: 8px; }
+.save-hero b { display: block; font: 800 1.15rem/1.2 var(--f-display); }
+.save-hero small { color: var(--ink-2); }
+.save-check { flex: none; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; background: var(--good, #1F9D5B); color: #fff; animation: pop .35s cubic-bezier(.2,1.4,.4,1); }
+.save-check svg { width: 28px; height: 28px; }
+@keyframes pop { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.save-list { list-style: none; margin: 14px 0 6px; padding: 0; display: grid; gap: 8px; }
+.save-list li { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+.save-list li svg { flex: none; width: 20px; height: 20px; color: var(--good, #1F9D5B); }
