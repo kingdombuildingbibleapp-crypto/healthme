@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HealthMe</title>
+<meta name="description" content="Pick any health condition, scan any product's barcode, and see how good or bad it is for you.">
+<meta name="theme-color" content="#F3F6F4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1513" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="HealthMe">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icons/icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="9" fill="var(--accent)"/><path d="M9 16.5l4.5 4.5L23 11" fill="none" stroke="var(--on-accent)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="wordmark">Health<b>Me</b></span>
+    </div>
+    <button class="icon-btn" id="historyBtn" aria-label="Scan history">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7v5l3 2M3.5 12a8.5 8.5 0 1 0 2.5-6M3 4v4h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </header>
+
+  <main>
+    <!-- Conditions -->
+    <section class="conditions" aria-labelledby="condLabel">
+      <div class="row-between">
+        <h2 id="condLabel" class="eyebrow">Checking products for</h2>
+        <span class="count" id="condCount"></span>
+      </div>
+      <button class="cond-picker" id="openPicker" aria-haspopup="dialog">
+        <span id="condSummary" class="cond-summary">Choose your condition</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="chips" id="condChips"></div>
+      <button class="record-btn" id="openRecord">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z M14 3v5h5 M9 13h6 M9 17h4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span><b id="recordBtnTitle">Import from medical record</b><small id="recordBtnSub">More accurate ratings. Read on this phone only.</small></span>
+      </button>
+    </section>
+
+    <!-- Scanner -->
+    <section class="scanner" aria-label="Barcode scanner">
+      <div class="viewport" id="viewport">
+        <div id="reader"></div>
+        <div class="idle" id="scanIdle">
+          <div class="bars" aria-hidden="true"></div>
+          <p>Point your camera at any barcode — food, skincare, cleaning supplies, anything.</p>
+        </div>
+        <div class="frame" aria-hidden="true"><i></i><i></i><i></i><i></i><span class="laser"></span></div>
+      </div>
+      <div class="scan-actions">
+        <button class="btn primary" id="scanBtn">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 8v8M10 8v8M13 8v8M17 8v8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span id="scanBtnText">Scan a barcode</span>
+        </button>
+        <div class="alt-actions">
+          <button class="btn ghost" id="typeBtn">Type number</button>
+          <label class="btn ghost" for="photoInput">Use a photo</label>
+          <input type="file" id="photoInput" accept="image/*" capture="environment" hidden>
+        </div>
+      </div>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+    </section>
+
+    <!-- Recent -->
+    <section class="recent">
+      <div class="row-between">
+        <h2 class="eyebrow" id="recentTitle">Examples</h2>
+        <button class="link" id="clearHistory" hidden>Clear</button>
+      </div>
+      <ul class="recent-list" id="recentList"></ul>
+    </section>
+
+    <p class="fineprint">HealthMe gives general guidance from ingredient and nutrition data. It isn't medical advice and can miss things. Always read the label and follow your doctor's advice, especially for allergies.</p>
+  </main>
+</div>
+
+<!-- Condition picker -->
+<dialog class="sheet" id="picker" aria-labelledby="pickerTitle">
+  <div class="sheet-head">
+    <h2 id="pickerTitle">Your conditions</h2>
+    <button class="btn small" id="pickerDone">Done</button>
+  </div>
+  <div class="search">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    <input id="condSearch" type="search" placeholder="Search any illness, disorder, allergy…" autocomplete="off" enterkeyhint="search">
+  </div>
+  <p class="picker-hint" id="pickerHint">Pick one or more. Products are rated against all of them.</p>
+  <div class="cond-list" id="condList" role="listbox" aria-multiselectable="true"></div>
+</dialog>
+
+<!-- Medical record -->
+<dialog class="sheet" id="recordDialog" aria-labelledby="recordTitle">
+  <div class="sheet-head">
+    <h2 id="recordTitle">Medical record</h2>
+    <button class="btn small ghost" data-close>Close</button>
+  </div>
+  <div class="privacy">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+    <p><b>Your record never leaves this phone.</b> HealthMe reads it here, shows you what it found, and keeps only the conditions you approve. The file itself isn't saved or uploaded.</p>
+  </div>
+
+  <div id="recordStep1">
+    <label class="drop" for="recordFile">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <b>Choose a file or take a photo</b>
+      <small>Visit summary, lab results, or patient-portal download.<br>PDF, photo, CCD/XML, FHIR JSON or text.</small>
+    </label>
+    <input type="file" id="recordFile" accept=".pdf,image/*,.txt,.xml,.ccd,.cda,.json,.htm,.html,.csv,text/plain,application/pdf" hidden>
+    <details class="paste">
+      <summary>Or paste text from your patient portal</summary>
+      <label class="field-label" for="recordPaste">Problem list, allergies, medications or lab results</label>
+      <textarea class="field" id="recordPaste" rows="6" placeholder="Problems: Type 2 diabetes mellitus, Essential hypertension&#10;Allergies: Peanuts (anaphylaxis)&#10;Medications: atorvastatin 20 mg&#10;LDL 168 mg/dL"></textarea>
+      <button class="btn primary wide" id="recordPasteGo" type="button">Find conditions</button>
+    </details>
+    <p class="status" id="recordStatus" role="status" aria-live="polite"></p>
+  </div>
+
+  <div id="recordStep2" hidden>
+    <p class="picker-hint" id="recordSummary"></p>
+    <div id="recordFindings"></div>
+    <button class="btn primary wide" id="recordApply">Add to my conditions</button>
+    <button class="btn ghost wide" id="recordAgain" type="button">Read a different record</button>
+  </div>
+
+  <div class="record-saved" id="recordSaved" hidden>
+    <p class="small muted" id="recordSavedText"></p>
+    <button class="link danger" id="recordForget" type="button">Remove everything added from records</button>
+  </div>
+  <p class="fineprint">Automatic reading can miss or misread things, so check the list before you add it. HealthMe doesn't diagnose anything.</p>
+</dialog>
+
+<!-- Manual barcode -->
+<dialog class="sheet small-sheet" id="typeDialog" aria-labelledby="typeTitle">
+  <form id="typeForm" method="dialog">
+    <div class="sheet-head"><h2 id="typeTitle">Enter barcode</h2><button type="button" class="btn small ghost" data-close>Cancel</button></div>
+    <label class="field-label" for="codeInput">The numbers under the barcode</label>
+    <input class="field mono" id="codeInput" inputmode="numeric" pattern="[0-9]{6,14}" placeholder="e.g. 049000028911" required autocomplete="off">
+    <button class="btn primary wide" type="submit">Check product</button>
+  </form>
+</dialog>
+
+<!-- Not found / manual product -->
+<dialog class="sheet" id="manualDialog" aria-labelledby="manualTitle">
+  <form id="manualForm" method="dialog">
+    <div class="sheet-head"><h2 id="manualTitle">Add product details</h2><button type="button" class="btn small ghost" data-close>Cancel</button></div>
+    <p class="picker-hint" id="manualHint">We couldn't find this barcode in any database. Type the product name and copy the ingredients from the label, and we'll rate it.</p>
+    <label class="field-label" for="mName">Product name</label>
+    <input class="field" id="mName" required placeholder="e.g. Lavender hand soap">
+    <label class="field-label" for="mKind">What kind of product?</label>
+    <select class="field" id="mKind">
+      <option value="food">Food, drink or supplement</option>
+      <option value="cosmetic">Skin, hair, body or oral care</option>
+      <option value="household">Cleaning or household chemical</option>
+      <option value="other">Something else (device, clothing, toy…)</option>
+    </select>
+    <label class="field-label" for="mIng">Ingredients (optional but much more accurate)</label>
+    <textarea class="field" id="mIng" rows="5" placeholder="Water, glycerin, sodium laureth sulfate, fragrance…"></textarea>
+    <button class="btn primary wide" type="submit">Rate this product</button>
+  </form>
+</dialog>
+
+<!-- Result -->
+<dialog class="sheet result-sheet" id="resultDialog" aria-labelledby="rName">
+  <div class="sheet-head">
+    <span class="eyebrow" id="rSource"></span>
+    <button class="btn small" id="resultClose">Scan next</button>
+  </div>
+  <div class="product">
+    <div class="thumb" id="rThumb"></div>
+    <div class="product-meta">
+      <h2 id="rName"></h2>
+      <p id="rBrand" class="muted"></p>
+      <p id="rCode" class="mono muted small"></p>
+    </div>
+  </div>
+  <div class="verdict" id="rVerdict">
+    <div class="mark" id="rMark" aria-hidden="true"></div>
+    <div class="reading">
+      <div class="pct mono"><span id="rPct">0</span><small>%</small></div>
+      <div class="verdict-word" id="rWord"></div>
+      <div class="muted small" id="rFor"></div>
+    </div>
+    <div class="meter" aria-hidden="true"><span id="rMeter"></span></div>
+  </div>
+  <div class="per-cond" id="rPerCond"></div>
+  <h3 class="eyebrow" id="rWhyTitle">Why</h3>
+  <ul class="reasons" id="rReasons"></ul>
+  <details class="ingredients" id="rIngWrap">
+    <summary>Ingredients</summary>
+    <p id="rIng"></p>
+  </details>
+  <p class="fineprint" id="rData"></p>
+</dialog>
+
+<script src="/vendor/html5-qrcode.min.js"></script>
+<script src="/js/conditions.js"></script>
+<script src="/js/engine.js"></script>
+<script src="/js/records.js"></script>
+<script src="/js/samples.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>
