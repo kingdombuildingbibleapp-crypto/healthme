@@ -26,9 +26,9 @@
 <h2>Optional account (encrypted)</h2>
 <p>You can create an account so your profiles come back on another phone or after reinstalling. Here's how it works:</p>
 <ul>
-<li><b>Encrypted before it leaves your device.</b> Your password is turned into two keys on your device. One encrypts your profiles (AES-256-GCM). The other proves who you are when you sign in. We store only the encrypted profiles and a one-way hash of the sign-in key. We never receive your password, and we can't decrypt your profiles.</li>
+<li><b>Encrypted before it leaves your device.</b> Your profiles are encrypted on your device with a random key (AES-256-GCM). That key is itself locked twice on your device: once with your password and once with a recovery code. We store only these encrypted pieces and one-way hashes used to check your sign-in. We never receive your password or recovery code, and we can't decrypt your profiles.</li>
 <li><b>We don't store your email address.</b> Your account is identified by a one-way hash of your email.</li>
-<li><b>Forgotten passwords can't be reset.</b> Because only your password can unlock your profiles, we can't recover them for you. The copy on your phone is not affected.</li>
+<li><b>Forgot your password?</b> Use the recovery code you saved when you created your account to set a new password. If you're still signed in on any device, you can also change your password there. Without your password, a recovery code or a signed-in device, we can't unlock your account copy, because we don't hold the keys. The copy on your phone is not affected.</li>
 <li><b>Where it's stored.</b> Encrypted data is stored with our hosting provider, Netlify, in the United States.</li>
 <li><b>Delete anytime.</b> "Delete my account" in the app permanently erases your account and its encrypted data from our servers.</li>
 </ul>

@@ -544,3 +544,14 @@ dialog.sheet > .btn.wide { display: flex; width: calc(100% - 40px); }
 .save-btn.cloud::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #7CFFB0; box-shadow: 0 0 0 2px rgba(255,255,255,.6); margin-left: 2px; }
 .logo-badge { width: 58px; height: 58px; margin: 0; border-radius: 14px; filter: none; box-shadow: 0 8px 18px -8px rgba(21, 55, 184, .7); }
 #acctForm { padding-inline: 0; }
+
+/* ---------- recovery ---------- */
+.link-btn { display: block; margin: 12px auto 0; padding: 6px 10px; border: 0; background: none; color: var(--accent); font-weight: 700; text-decoration: underline; }
+.recover-head { margin: 4px 0 0; } .recover-head p { margin: 4px 0 0; color: var(--ink-2); font-size: .92rem; }
+.recover-help { margin-top: 16px; padding: 12px 14px; border-radius: 14px; background: rgba(0,0,0,.04); font-size: .88rem; }
+.recover-help p { margin: 6px 0 0; }
+.code-box { margin: 10px 0 12px; padding: 18px 12px; border-radius: 16px; background: #fff; border: 2px dashed var(--accent); text-align: center; }
+.code-box span { font-size: clamp(1.05rem, 5.2vw, 1.45rem); font-weight: 700; letter-spacing: .04em; word-break: break-all; user-select: all; -webkit-user-select: all; }
+.code-confirm { display: flex; align-items: center; gap: 10px; margin: 12px 0 2px; font-weight: 700; }
+.code-confirm input { width: 22px; height: 22px; accent-color: var(--accent); }
+.change-pw { margin: 4px 0 8px; }

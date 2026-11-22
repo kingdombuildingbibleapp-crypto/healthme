@@ -245,15 +245,45 @@
   // ---------- Account ----------
   const A = window.HM_ACCOUNT;
   let pendingConflict = null, deleteAcctArmed = false;
-  const acctMode = () => document.querySelector('input[name="acctMode"]:checked').value;
+  let recovering = false;
+  const acctMode = () => recovering ? "recover" : document.querySelector('input[name="acctMode"]:checked').value;
   function syncAcctMode() {
-    const up = acctMode() === "signup";
-    $("acctPw2Wrap").hidden = !up;
-    $("acctPw").autocomplete = up ? "new-password" : "current-password";
-    $("acctSubmit").textContent = up ? "Create account and save" : "Sign in";
+    const m = acctMode(), up = m === "signup", rec = m === "recover";
+    $("acctPw2Wrap").hidden = !(up || rec);
+    $("acctCodeWrap").hidden = !rec; $("recoverHead").hidden = !rec; $("recoverHelp").hidden = !rec;
+    document.querySelector(".acct-tabs").hidden = rec;
+    $("acctPwLabel").textContent = rec ? "New password" : "Password";
+    $("acctPw").autocomplete = up || rec ? "new-password" : "current-password";
+    $("acctSubmit").textContent = up ? "Create account and save" : rec ? "Reset password and sign in" : "Sign in";
     $("acctNote").hidden = !up;
+    $("acctForgot").hidden = m !== "login";
     $("acctErr").hidden = true;
   }
+  $("acctForgot").addEventListener("click", () => { recovering = true; syncAcctMode(); $("acctCode").focus(); });
+  $("acctBackToLogin").addEventListener("click", () => { recovering = false; syncAcctMode(); });
+  // show a recovery code once, and make sure it's been saved
+  let codeAfter = null;
+  function showCode(code, why, after) {
+    $("codeText").textContent = code;
+    if (why) $("codeWhy").textContent = why;
+    $("codeOk").checked = false; $("codeDone").disabled = true;
+    codeAfter = after || null;
+    $("codeDialog").showModal();
+  }
+  $("codeOk").addEventListener("change", () => { $("codeDone").disabled = !$("codeOk").checked; });
+  $("codeDialog").addEventListener("cancel", e => { if (!$("codeOk").checked) e.preventDefault(); });
+  $("codeDone").addEventListener("click", () => { $("codeDialog").close(); const f = codeAfter; codeAfter = null; if (f) f(); });
+  $("codeCopy").addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText($("codeText").textContent); $("codeCopy").textContent = "Copied ✓"; }
+    catch { $("codeCopy").textContent = "Select and copy it"; }
+    setTimeout(() => { $("codeCopy").textContent = "Copy"; }, 2000);
+  });
+  $("codeSaveFile").addEventListener("click", () => {
+    const text = `HealthyScan recovery code\n\n${$("codeText").textContent}\n\nAccount email: ${A.state().email}\nMade: ${new Date().toLocaleString()}\n\nUse this with "Forgot password?" at healthyscan.net. Keep it private.\n`;
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
+    a.download = "HealthyScan-recovery-code.txt"; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  });
   document.querySelectorAll('input[name="acctMode"]').forEach(r => r.addEventListener("change", syncAcctMode));
   function renderAccount() {
     const st = A.state();
@@ -263,12 +293,14 @@
       : st.at ? `Last saved to your account ${new Date(st.at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}` : "Signed in";
     $("acctConflict").hidden = !pendingConflict;
     $("acctSyncNow").hidden = !!pendingConflict;
+    $("acctChangePw").hidden = $("acctNewCode").hidden = !!pendingConflict;
     $("menuAccount").textContent = st.signedIn ? `Account: ${st.email}` : "Account: sign up or sign in";
     $("saveBtn").classList.toggle("cloud", st.signedIn);
   }
   A.onChange(renderAccount);
   function openAccount() {
     deleteAcctArmed = false; $("acctDelete").textContent = "Delete my account"; $("acctStatus").textContent = "";
+    recovering = false; $("acctCode").value = ""; $("changePwForm").hidden = true;
     $("acctErr").hidden = true; $("acctPw").value = ""; $("acctPw2").value = "";
     syncAcctMode(); renderAccount();
     if (!$("accountDialog").open) $("accountDialog").showModal();
@@ -276,21 +308,32 @@
   $("menuAccount").addEventListener("click", () => { $("menuDialog").close(); openAccount(); });
   $("acctForm").addEventListener("submit", async e => {
     e.preventDefault();
-    const email = $("acctEmail").value.trim(), pw = $("acctPw").value, up = acctMode() === "signup";
+    const email = $("acctEmail").value.trim(), pw = $("acctPw").value, mode = acctMode(), up = mode === "signup", rec = mode === "recover";
     const err = m => { $("acctErr").textContent = m; $("acctErr").hidden = false; };
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return err("Enter a valid email address.");
     if (pw.length < 8) return err("Use at least 8 characters for your password.");
-    if (up && pw !== $("acctPw2").value) return err("The two passwords don't match.");
-    $("acctSubmit").disabled = true; $("acctSubmit").innerHTML = '<span class="spinner"></span> ' + (up ? "Creating your account…" : "Signing in…");
+    if ((up || rec) && pw !== $("acctPw2").value) return err("The two passwords don't match.");
+    if (rec && !A.codeLooksValid($("acctCode").value)) return err("A recovery code has 20 letters and numbers, like K7Q2M-9XH4P-R3TWE-6NBJD.");
+    $("acctSubmit").disabled = true; $("acctSubmit").innerHTML = '<span class="spinner"></span> ' + (up ? "Creating your account…" : rec ? "Checking your recovery code…" : "Signing in…");
+    const after = r => {
+      if (r.conflict) pendingConflict = r;
+      else if (r.restored) { renderHome(); toast("Welcome back! Your profiles are here.", 4000); }
+      else if (!up) toast("Signed in. This phone's profiles are now saved to your account.", 4000);
+      renderAccount();
+    };
     try {
       if (up) {
-        await A.signup(email, pw);
-        toast("Account created. Your profiles are saved to it.", 4000);
+        const r = await A.signup(email, pw);
+        renderAccount();
+        showCode(r.code, null, () => toast("Account created. Your profiles are saved to it.", 4000));
+      } else if (rec) {
+        const r = await A.recover(email, $("acctCode").value, pw);
+        recovering = false;
+        showCode(r.code, "Your password is reset. Your old recovery code no longer works, so save this new one. It's how you get back in if you forget your password again.", () => after(r));
       } else {
         const r = await A.login(email, pw);
-        if (r.conflict) pendingConflict = r;
-        else if (r.restored) { renderHome(); toast("Welcome back! Your profiles are here.", 4000); }
-        else toast("Signed in. This phone's profiles are now saved to your account.", 4000);
+        if (r.code) showCode(r.code, "Your account now has a recovery code. If you ever forget your password, it's how you get back in.", () => after(r));
+        else after(r);
       }
       $("acctPw").value = $("acctPw2").value = "";
       renderAccount();
@@ -302,6 +345,22 @@
   $("acctSyncNow").addEventListener("click", async () => {
     $("acctStatus").textContent = "Saving…";
     try { await A.syncNow(); $("acctStatus").textContent = "Saved to your account."; } catch (e) { $("acctStatus").textContent = e.message; }
+  });
+  $("acctChangePw").addEventListener("click", () => { $("changePwForm").hidden = !$("changePwForm").hidden; if (!$("changePwForm").hidden) $("newPw").focus(); });
+  $("changePwForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const a = $("newPw").value, b2 = $("newPw2").value;
+    if (a.length < 8) return ($("acctStatus").textContent = "Use at least 8 characters.");
+    if (a !== b2) return ($("acctStatus").textContent = "The two passwords don't match.");
+    $("changePwSave").disabled = true; $("acctStatus").textContent = "Saving new password…";
+    try { await A.changePassword(a); $("newPw").value = $("newPw2").value = ""; $("changePwForm").hidden = true; $("acctStatus").textContent = "Password changed. Use it next time you sign in."; }
+    catch (ex) { $("acctStatus").textContent = ex.message; }
+    finally { $("changePwSave").disabled = false; }
+  });
+  $("acctNewCode").addEventListener("click", async () => {
+    $("acctStatus").textContent = "Making a new code…";
+    try { const c = await A.newRecoveryCode(); $("acctStatus").textContent = ""; showCode(c, "Here's your new recovery code. Your old one no longer works."); }
+    catch (ex) { $("acctStatus").textContent = ex.message; }
   });
   $("acctLogout").addEventListener("click", async () => {
     await A.logout(); pendingConflict = null; renderAccount();

@@ -181,19 +181,31 @@
       <label><input type="radio" name="acctMode" value="signup" checked><span>Create account</span></label>
       <label><input type="radio" name="acctMode" value="login"><span>Sign in</span></label>
     </div>
+    <div id="recoverHead" class="recover-head" hidden><b>Forgot your password?</b><p>Enter your email, the recovery code you saved when you created your account, and a new password.</p></div>
     <form id="acctForm">
       <label class="field-label" for="acctEmail">Email</label>
       <input class="field" id="acctEmail" type="email" autocomplete="email" inputmode="email" autocapitalize="none" required>
-      <label class="field-label" for="acctPw">Password</label>
+      <div id="acctCodeWrap" hidden>
+        <label class="field-label" for="acctCode">Recovery code</label>
+        <input class="field mono" id="acctCode" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXXX-XXXXX-XXXXX-XXXXX">
+      </div>
+      <label class="field-label" for="acctPw" id="acctPwLabel">Password</label>
       <input class="field" id="acctPw" type="password" autocomplete="new-password" minlength="8" required>
       <div id="acctPw2Wrap">
         <label class="field-label" for="acctPw2">Type the password again</label>
         <input class="field" id="acctPw2" type="password" autocomplete="new-password" minlength="8">
       </div>
-      <p class="acct-note" id="acctNote">🔒 Your profiles are locked with your password on this phone before they're saved. Not even HealthyScan can read them, so <b>we can't reset a forgotten password</b>. Write it down somewhere safe.</p>
+      <p class="acct-note" id="acctNote">🔒 Your profiles are locked on this phone before they're saved, so not even HealthyScan can read them. Next, you'll get a <b>recovery code</b>. Keep it safe: it's how you get back in if you forget your password.</p>
       <p class="status bad-text" id="acctErr" role="alert" hidden></p>
       <button class="btn primary wide" type="submit" id="acctSubmit">Create account and save</button>
     </form>
+    <button class="link-btn" id="acctForgot" hidden>Forgot password?</button>
+    <div id="recoverHelp" class="recover-help" hidden>
+      <b>No recovery code?</b>
+      <p>If HealthyScan is still signed in on any phone, open <b>Account</b> there and tap <b>Change password</b>. You won't need the old one.</p>
+      <p>Otherwise the account copy can't be unlocked, because it's encrypted so only your password or recovery code can open it. Your profiles saved on this phone are not affected.</p>
+      <button class="link-btn" id="acctBackToLogin">Back to sign in</button>
+    </div>
   </div>
   <div id="acctIn" hidden>
     <div class="save-hero"><span class="save-check" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
@@ -206,10 +218,34 @@
       <button class="btn wide" id="acctKeepPhone">Keep this phone's profiles (replaces the account copy)</button>
     </div>
     <button class="btn wide" id="acctSyncNow">Save to my account now</button>
+    <button class="btn wide" id="acctChangePw">Change password</button>
+    <form id="changePwForm" class="change-pw" hidden>
+      <label class="field-label" for="newPw">New password</label>
+      <input class="field" id="newPw" type="password" autocomplete="new-password" minlength="8">
+      <label class="field-label" for="newPw2">Type it again</label>
+      <input class="field" id="newPw2" type="password" autocomplete="new-password" minlength="8">
+      <p class="picker-hint">Other phones will be signed out and need the new password.</p>
+      <button class="btn primary wide" type="submit" id="changePwSave">Save new password</button>
+    </form>
+    <button class="btn wide" id="acctNewCode">Get a new recovery code</button>
     <button class="btn ghost wide" id="acctLogout">Sign out</button>
     <button class="btn ghost wide danger-text" id="acctDelete">Delete my account</button>
     <p class="status" id="acctStatus" role="status" aria-live="polite"></p>
   </div>
+</dialog>
+
+<!-- ============ RECOVERY CODE ============ -->
+<dialog class="sheet" id="codeDialog" aria-labelledby="codeTitle">
+  <div class="sheet-head"><h2 id="codeTitle">Save your recovery code</h2></div>
+  <p class="picker-hint" id="codeWhy">If you ever forget your password, this code gets you back into your account. It's the only way, because your profiles are encrypted so that no one else, not even HealthyScan, can open them.</p>
+  <div class="code-box"><span class="mono" id="codeText"></span></div>
+  <div class="two-col">
+    <button class="btn" id="codeCopy">Copy</button>
+    <button class="btn" id="codeSaveFile">Save as file</button>
+  </div>
+  <p class="picker-hint">Good places: your password manager, a note in a safe place, or a screenshot in your photos. Anyone with this code and your email can open your account, so keep it private.</p>
+  <label class="code-confirm"><input type="checkbox" id="codeOk"> I saved my recovery code</label>
+  <button class="btn primary wide" id="codeDone" disabled>Done</button>
 </dialog>
 
 <!-- ============ SAVE ============ -->
