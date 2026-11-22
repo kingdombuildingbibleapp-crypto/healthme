@@ -14,3 +14,5 @@
   Cache-Control: public, max-age=31536000
 /vendor/tesseract/lang/*
   Content-Type: application/octet-stream
+/vendor/zxing/*.wasm
+  Content-Type: application/wasm

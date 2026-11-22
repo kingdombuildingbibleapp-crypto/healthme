@@ -118,14 +118,15 @@
 
 <!-- ============ CAMERA ============ -->
 <dialog class="camera" id="camera" aria-label="Barcode camera">
-  <div id="reader"></div>
+  <video id="camVideo" playsinline muted autoplay aria-hidden="true"></video>
   <div class="cam-frame" aria-hidden="true"><i></i><i></i><i></i><i></i><span class="laser"></span></div>
   <div class="cam-top">
     <button class="cam-btn" id="camClose" aria-label="Close camera"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
     <span class="cam-for" id="camFor"></span>
+    <button class="cam-btn" id="camTorch" aria-label="Flashlight" aria-pressed="false" hidden><svg viewBox="0 0 24 24"><path d="M8 2h8l-1 6H9zM9 8h6v3l-2 3v8h-2v-8l-2-3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></button>
   </div>
   <div class="cam-bottom">
-    <p id="camMsg">Line the barcode up inside the frame</p>
+    <p id="camMsg">Hold the barcode inside the frame</p>
     <div class="cam-alts">
       <button class="pill" id="camType">Type number</button>
       <label class="pill" for="photoInput">Use a photo</label>
@@ -137,8 +138,17 @@
 <dialog class="sheet" id="profileDialog" aria-labelledby="profileTitle">
   <form id="profileForm" method="dialog">
     <div class="sheet-head"><h2 id="profileTitle">Profile</h2><button type="button" class="btn small ghost" data-close>Cancel</button></div>
+    <div class="photo-row">
+      <span id="pPhotoPreview" aria-hidden="true"></span>
+      <div class="photo-actions">
+        <label class="btn small" for="pPhotoInput" id="pPhotoLabel">Add photo</label>
+        <input type="file" id="pPhotoInput" accept="image/*" hidden>
+        <button type="button" class="btn small ghost" id="pPhotoRemove" hidden>Remove</button>
+        <p class="picker-hint">Optional. Stays on this phone.</p>
+      </div>
+    </div>
     <label class="field-label" for="pName">Name</label>
-    <input class="field" id="pName" required maxlength="30" placeholder="e.g. Maya" autocomplete="off">
+    <input class="field" id="pName" maxlength="30" placeholder="e.g. Maya" autocomplete="off">
     <span class="field-label" id="pKindLabel">Who is this?</span>
     <div class="seg" role="radiogroup" aria-labelledby="pKindLabel">
       <label><input type="radio" name="pKind" value="self" checked><span>Me</span></label>
@@ -193,7 +203,8 @@
   <form id="typeForm" method="dialog">
     <div class="sheet-head"><h2 id="typeTitle">Enter barcode</h2><button type="button" class="btn small ghost" data-close>Cancel</button></div>
     <label class="field-label" for="codeInput">The numbers under the barcode</label>
-    <input class="field mono" id="codeInput" inputmode="numeric" pattern="[0-9]{6,14}" placeholder="e.g. 049000028911" required autocomplete="off">
+    <input class="field mono" id="codeInput" inputmode="numeric" placeholder="e.g. 0 49000 02891 1" required autocomplete="off">
+    <p class="status bad-text" id="codeErr" role="alert" hidden></p>
     <button class="btn primary wide" type="submit">Check product</button>
   </form>
 </dialog>
@@ -299,7 +310,8 @@
   <p class="fineprint" id="rData"></p>
 </dialog>
 
-<script src="/vendor/html5-qrcode.min.js"></script>
+<script src="/vendor/zxing/zxing-reader.min.js"></script>
+<script src="/js/scanner.js"></script>
 <script src="/js/conditions.js"></script>
 <script src="/js/engine.js"></script>
 <script src="/js/records.js"></script>

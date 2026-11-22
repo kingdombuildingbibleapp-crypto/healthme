@@ -250,9 +250,6 @@ svg { display: block; }
 /* ============ CAMERA ============ */
 dialog.camera { width: 100%; height: 100%; max-width: 100%; max-height: 100%; margin: 0; padding: 0; border: 0; background: #000; color: #fff; overflow: hidden; }
 dialog.camera::backdrop { background: #000; }
-#reader { position: absolute; inset: 0; }
-#reader video { width: 100% !important; height: 100% !important; object-fit: cover; }
-#reader > div, #reader canvas, #reader img { display: none !important; }
 .cam-frame { position: absolute; left: 9%; right: 9%; top: 37%; height: 24%; z-index: 2; pointer-events: none; }
 .cam-frame i { position: absolute; width: 34px; height: 34px; border: 4px solid #fff; }
 .cam-frame i:nth-child(1) { top: 0; left: 0; border-right: 0; border-bottom: 0; border-top-left-radius: 14px; }
@@ -432,3 +429,18 @@ textarea.field { resize: vertical; line-height: 1.4; }
 .or { display: flex; align-items: center; gap: 10px; margin: 18px 0 12px; color: var(--muted); font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
 .or::before, .or::after { content: ""; flex: 1; height: 1px; background: var(--line); }
 .fineprint a { color: var(--accent); font-weight: 700; }
+
+/* ---------- profile photos ---------- */
+.avatar.has-photo { background: var(--glass-strong) !important; }
+.avatar .av-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.avatar.xl { width: 76px; height: 76px; font-size: 1.5rem; }
+.photo-row { display: flex; align-items: center; gap: 16px; margin-top: 6px; }
+.photo-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.photo-actions .picker-hint { flex-basis: 100%; margin: 0; }
+
+/* ---------- camera (own scanner) ---------- */
+#camVideo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #000; }
+.cam-btn[hidden] { display: none; }
+.cam-btn.on { background: #fff; color: #111; }
+.cam-top .cam-for { flex: 1; }
+.bad-text { color: var(--bad); font-weight: 700; margin: 8px 0 0; }

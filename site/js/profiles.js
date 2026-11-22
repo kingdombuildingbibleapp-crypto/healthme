@@ -25,7 +25,7 @@
   let activeId = read(ACTIVE, profiles[0].id);
   if (!profiles.some(p => p.id === activeId)) activeId = profiles[0].id;
 
-  const save = () => { write(KEY, profiles); write(ACTIVE, activeId); };
+  const save = () => { const ok = write(KEY, profiles); write(ACTIVE, activeId); return ok; };
 
   function ageMonths(p) {
     if (p.kind !== "child" || !p.birth) return null;
@@ -69,7 +69,11 @@
       const p = { id: uid(), name: "", kind: "adult", color: COLORS[profiles.length % COLORS.length], conditions: [], recordIds: [], recordMeta: null, created: Date.now(), ...data };
       profiles.push(p); activeId = p.id; save(); return p;
     },
-    update(id, patch) { const p = api.get(id); if (p) { Object.assign(p, patch); save(); } return p; },
+    update(id, patch) {
+      const p = api.get(id);
+      if (p) { Object.assign(p, patch); for (const k of Object.keys(patch)) if (patch[k] === undefined) delete p[k]; if (!save()) return null; }
+      return p;
+    },
     remove(id) {
       if (profiles.length <= 1) return false;
       profiles = profiles.filter(p => p.id !== id);
@@ -102,6 +106,8 @@
       p.conditions = (p.conditions || []).filter(s => !ids.has(typeof s === "string" ? s : s.id));
       p.recordIds = []; p.recordMeta = null; save();
     },
+    // profile photos are small JPEG data URLs made on the phone (never uploaded)
+    validPhoto: s => typeof s === "string" && /^data:image\/(jpeg|webp|png);base64,[A-Za-z0-9+/=]+$/.test(s) && s.length < 300000,
     initials: p => (p.kind === "self" && (!p.name || p.name === "Me")) ? "ME" : (p.name || "?").trim().split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase(),
     displayName: p => (p.kind === "self" && (!p.name || p.name === "Me") ? "You" : p.name),
     // backup
@@ -115,6 +121,7 @@
         conditions: Array.isArray(p.conditions) ? p.conditions.filter(s => typeof s === "string" ? byId[s] : s && s.custom && typeof s.name === "string") : [],
         recordIds: Array.isArray(p.recordIds) ? p.recordIds.filter(x => typeof x === "string") : [],
         recordMeta: p.recordMeta || null, created: p.created || Date.now(),
+        photo: api.validPhoto(p.photo) ? p.photo : undefined,
       }));
       if (!clean.length) throw new Error("empty");
       profiles = clean; activeId = clean[0].id; save();

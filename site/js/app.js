@@ -26,7 +26,8 @@
   const WORD = { good: "Good for you", medium: "Use with caution", bad: "Not recommended" };
   const WORD_FOR = { good: "Good for", medium: "Caution for", bad: "Not for" };
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const avatar = (p, cls = "") => `<span class="avatar ${cls}" style="--av:${esc(p.color)}">${p.kind === "child" ? ICON.kid : ""}<b>${esc(P.initials(p))}</b></span>`;
+  const avInner = p => (P.validPhoto(p.photo) ? `<img class="av-img" src="${p.photo}" alt="">` : `<b>${esc(P.initials(p))}</b>`) + (p.kind === "child" ? ICON.kid : "");
+  const avatar = (p, cls = "", id = "") => `<span class="avatar ${cls}${P.validPhoto(p.photo) ? " has-photo" : ""}"${id ? ` id="${id}"` : ""} style="--av:${esc(p.color)}">${avInner(p)}</span>`;
   const ring = (score, v, cls = "") => {
     const C = 2 * Math.PI * 42;
     return `<span class="ring v-${v} ${cls}" style="--off:${(C * (1 - score / 100)).toFixed(1)};--C:${C.toFixed(1)}"><svg viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="42"/><circle class="prg" cx="50" cy="50" r="42"/></svg><span class="ring-in">${ICON[v]}</span></span>`;
@@ -55,7 +56,7 @@
       `<button class="fam add" id="famAdd" aria-label="Add a family member"><span class="avatar ghost">${ICON.plus}</span><span>Add</span></button>`;
 
     // health card
-    $("hcAvatar").outerHTML = `<span class="avatar lg" id="hcAvatar" style="--av:${esc(me.color)}">${me.kind === "child" ? ICON.kid : ""}<b>${esc(P.initials(me))}</b></span>`;
+    $("hcAvatar").outerHTML = avatar(me, "lg", "hcAvatar");
     $("healthTitle").textContent = `${possessive(me)} health profile`;
     const chosen = P.chosen(me), auto = P.autoConditions(me);
     const bits = [];
@@ -89,7 +90,39 @@
   });
 
   // ---------- profile editor ----------
-  let editingId = null, deleteArmed = false;
+  let editingId = null, deleteArmed = false, pendingPhoto;
+  function syncPhoto() {
+    const kind = document.querySelector('input[name="pKind"]:checked')?.value || "adult";
+    const color = document.querySelector('input[name="pColor"]:checked')?.value || P.COLORS[0];
+    const fake = { name: $("pName").value.trim() || (kind === "self" ? "Me" : "?"), kind, color, photo: pendingPhoto };
+    $("pPhotoPreview").innerHTML = avatar(fake, "xl");
+    $("pPhotoRemove").hidden = !pendingPhoto;
+    $("pPhotoLabel").textContent = pendingPhoto ? "Change photo" : "Add photo";
+  }
+  // Shrink to a 240px square JPEG right on the phone, so it stays small in storage
+  async function makePhoto(file) {
+    let src;
+    try { src = await createImageBitmap(file); }
+    catch {
+      src = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = URL.createObjectURL(file); });
+    }
+    const w = src.width || src.naturalWidth, h = src.height || src.naturalHeight, side = Math.min(w, h), S = 240;
+    const c = document.createElement("canvas"); c.width = c.height = S;
+    const ctx = c.getContext("2d");
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(src, (w - side) / 2, (h - side) / 2, side, side, 0, 0, S, S);
+    if (src.src) URL.revokeObjectURL(src.src);
+    return c.toDataURL("image/jpeg", 0.82);
+  }
+  $("pPhotoInput").addEventListener("change", async e => {
+    const file = e.target.files?.[0]; e.target.value = "";
+    if (!file) return;
+    try { pendingPhoto = await makePhoto(file); syncPhoto(); }
+    catch { toast("That photo couldn't be opened. Try a JPEG or PNG.", 4000); }
+  });
+  $("pPhotoRemove").addEventListener("click", () => { pendingPhoto = undefined; syncPhoto(); });
+  $("pName").addEventListener("input", syncPhoto);
+  $("pColors").addEventListener("change", syncPhoto);
   function openProfileEditor(id, kindDefault) {
     editingId = id; deleteArmed = false;
     const p = id ? P.get(id) : null;
@@ -105,6 +138,8 @@
     $("pBirth").max = new Date().toISOString().slice(0, 7);
     const color = p?.color || P.COLORS[P.all().length % P.COLORS.length];
     $("pColors").innerHTML = P.COLORS.map(c => `<label class="sw"><input type="radio" name="pColor" value="${c}" ${c === color ? "checked" : ""}><span style="--av:${c}"></span></label>`).join("");
+    pendingPhoto = p?.photo;
+    syncPhoto();
     $("pDelete").hidden = !p || P.all().length <= 1;
     $("pDelete").textContent = "Delete this profile";
     $("pSave").textContent = p ? "Save" : "Add and choose conditions";
@@ -114,6 +149,7 @@
   function syncKind() {
     const kind = document.querySelector('input[name="pKind"]:checked')?.value;
     $("pChildWrap").hidden = kind !== "child";
+    syncPhoto();
   }
   document.querySelectorAll('input[name="pKind"]').forEach(r => r.addEventListener("change", syncKind));
   $("profileForm").addEventListener("submit", e => {
@@ -123,9 +159,10 @@
       name: $("pName").value.trim() || (kind === "self" ? "Me" : "Family member"),
       kind, color: document.querySelector('input[name="pColor"]:checked')?.value || P.COLORS[0],
       birth: kind === "child" ? $("pBirth").value || undefined : undefined,
+      photo: P.validPhoto(pendingPhoto) ? pendingPhoto : undefined,
     };
     const isNew = !editingId;
-    if (editingId) P.update(editingId, data);
+    if (editingId) { if (!P.update(editingId, data)) return toast("This phone's storage is full, so the photo couldn't be saved. Try removing it.", 5000); }
     else P.add(data);
     $("profileDialog").close();
     $("menuDialog").close();
@@ -224,72 +261,74 @@
   $("picker").addEventListener("close", renderHome);
 
   // ---------- camera ----------
-  let scanner = null, scanning = false, handling = false;
-  function makeScanner() {
-    if (scanner) return scanner;
-    const F = window.Html5QrcodeSupportedFormats;
-    scanner = new window.Html5Qrcode("reader", {
-      verbose: false,
-      formatsToSupport: [F.EAN_13, F.EAN_8, F.UPC_A, F.UPC_E, F.CODE_128, F.CODE_39, F.ITF, F.QR_CODE],
-      experimentalFeatures: { useBarCodeDetectorIfSupported: true },
-    });
-    return scanner;
-  }
+  const S = window.HM_SCANNER;
+  let handling = false, hintTimer = 0, torchOn = false;
+  const CAM_MSG = "Hold the barcode inside the frame, about a hand's width away";
   async function openCamera() {
-    if (!window.Html5Qrcode) return toast("The scanner couldn't load. Check your connection, or type the number.");
     $("camMsg").textContent = "Starting camera…";
+    $("camTorch").hidden = true; torchOn = false; $("camTorch").classList.remove("on");
     $("camera").showModal();
+    handling = false;
     try {
-      makeScanner();
-      await scanner.start({ facingMode: "environment" }, {
-        fps: 12,
-        qrbox: (w, h) => ({ width: Math.floor(Math.min(w * 0.82, 420)), height: Math.floor(Math.min(h * 0.26, 200)) }),
-      }, onCode, () => {});
-      scanning = true; handling = false;
+      const info = await S.start($("camVideo"), document.querySelector("#camera .cam-frame"), onCode);
+      if (!info) return;
       $("camera").classList.add("live");
-      $("camMsg").textContent = "Line the barcode up inside the frame";
+      $("camMsg").textContent = CAM_MSG;
+      $("camTorch").hidden = !info.torch;
+      clearTimeout(hintTimer);
+      hintTimer = setTimeout(() => { if ($("camera").open) $("camMsg").textContent = "Still looking… Move a little closer or farther, keep it steady, and avoid glare. Or tap Type number."; }, 9000);
     } catch (err) {
-      const m = String(err?.message || err);
-      $("camMsg").textContent = /permission|notallowed|denied/i.test(m) ? "Camera access is blocked. Allow the camera for healthyscan.net in your browser settings, or use a photo."
-        : /notfound|no camera|requested device/i.test(m) ? "No camera found. Type the number or use a photo." : "The camera couldn't start. Type the number or use a photo.";
+      const n = err?.name || "", m = String(err?.message || err);
+      $("camMsg").textContent =
+        n === "NotAllowedError" || /permission|denied/i.test(m) ? "Camera access is blocked. Allow the camera for healthyscan.net in your browser settings, then try again. Or use a photo."
+        : n === "NotFoundError" || n === "OverconstrainedError" ? "No camera found. Type the number or use a photo."
+        : n === "NotReadableError" ? "Another app is using the camera. Close it and try again, or use a photo."
+        : n === "NoApi" ? "This browser can't open the camera. Open healthyscan.net in Safari or Chrome, or use a photo."
+        : "The camera couldn't start. Type the number or use a photo.";
     }
   }
   async function closeCamera() {
-    if (scanner && scanning) { try { await scanner.stop(); } catch {} }
-    scanning = false; $("camera").classList.remove("live");
+    clearTimeout(hintTimer);
+    S.stop();
+    $("camera").classList.remove("live");
     if ($("camera").open) $("camera").close();
   }
-  function onCode(text) {
+  function onCode(code) {
     if (handling) return;
     handling = true;
     if (navigator.vibrate) try { navigator.vibrate(40); } catch {}
-    closeCamera().then(() => checkCode(text));
+    closeCamera().then(() => checkCode(code));
   }
   $("scanBtn").addEventListener("click", openCamera);
   $("camClose").addEventListener("click", closeCamera);
+  $("camTorch").addEventListener("click", async () => {
+    if (await S.torch(!torchOn)) { torchOn = !torchOn; $("camTorch").classList.toggle("on", torchOn); $("camTorch").setAttribute("aria-pressed", torchOn); }
+  });
   $("camera").addEventListener("cancel", e => { e.preventDefault(); closeCamera(); });
   $("camType").addEventListener("click", () => closeCamera().then(openTypeDialog));
-  document.addEventListener("visibilitychange", () => { if (document.hidden && scanning) closeCamera(); });
+  document.addEventListener("visibilitychange", () => { if (document.hidden && $("camera").open) closeCamera(); });
+  // get the barcode engine ready in the background so the first scan is quick
+  if ("requestIdleCallback" in window) requestIdleCallback(() => S.warmUp()); else setTimeout(() => S.warmUp(), 1500);
 
   $("photoInput").addEventListener("change", async e => {
     const file = e.target.files?.[0]; e.target.value = "";
     if (!file) return;
     await closeCamera();
     toast('<span class="spinner"></span>Reading barcode from photo…', 0);
-    try {
-      makeScanner();
-      const res = await scanner.scanFileV2(file, false);
-      checkCode(res.decodedText);
-    } catch {
-      toast("No barcode found in that photo. Try a closer, sharper shot with the whole barcode in view.", 5000);
-    }
+    let code = null;
+    try { code = await S.decodeFile(file); } catch {}
+    if (code) checkCode(code);
+    else toast("No barcode found in that photo. Take it closer, with the whole barcode sharp and in view. Or type the number.", 6000);
   });
-  function openTypeDialog() { $("codeInput").value = ""; $("typeDialog").showModal(); setTimeout(() => $("codeInput").focus(), 50); }
+  function showTypeError(msg) { $("codeErr").textContent = msg; $("codeErr").hidden = false; $("codeInput").focus(); }
+  $("codeInput").addEventListener("input", () => { $("codeErr").hidden = true; });
+  function openTypeDialog() { $("codeErr").hidden = true; $("codeInput").value = ""; $("typeDialog").showModal(); setTimeout(() => $("codeInput").focus(), 50); }
   $("typeBtn").addEventListener("click", openTypeDialog);
   $("typeForm").addEventListener("submit", e => {
     e.preventDefault();
     const code = $("codeInput").value.replace(/\D/g, "");
-    if (code.length < 6) return;
+    if (code.length < 6 || code.length > 14) return showTypeError("Type all the numbers under the barcode. Most have 12 or 13 digits.");
+    if ((code.length === 12 || code.length === 13) && !S.gtinOk(code)) return showTypeError("That number doesn't add up. One digit may be off, so check it against the package.");
     $("typeDialog").close(); checkCode(code);
   });
   document.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => b.closest("dialog").close()));
@@ -305,10 +344,12 @@
   const SOURCE_NAME = Object.fromEntries(SOURCES.map(s => [s[0], s[2]]));
   SOURCE_NAME.upc = "UPCitemdb"; SOURCE_NAME.manual = "your label"; SOURCE_NAME.example = "example data";
   function variants(code) {
-    const v = [code];
-    if (code.length === 12) v.push("0" + code);
-    if (code.length === 13 && code.startsWith("0")) v.push(code.slice(1));
-    return v;
+    const v = new Set([code]);
+    if (code.length === 14 && code.startsWith("0")) code = code.slice(1), v.add(code);
+    if (code.length === 8) { const a = S.expandUpcE(code); if (a) v.add(a), v.add("0" + a); }
+    if (code.length === 12) v.add("0" + code);
+    if (code.length === 13 && code.startsWith("0")) v.add(code.slice(1));
+    return [...v];
   }
   async function fetchJSON(url, ms = 9000) {
     const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), ms);

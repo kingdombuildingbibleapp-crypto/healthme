@@ -43,7 +43,7 @@ Connect this repository to Netlify. `netlify.toml` sets the publish folder and f
 ## Credits and licenses
 
 - Product data © Open Food Facts contributors, under the [Open Database License](https://opendatacommons.org/licenses/odbl/1-0/)
-- [html5-qrcode](https://github.com/mebjas/html5-qrcode) (Apache-2.0)
+- [zxing-wasm](https://github.com/Sec-ant/zxing-wasm) (MIT), the ZXing C++ barcode reader compiled to WebAssembly
 - [pdf.js](https://github.com/mozilla/pdf.js) (Apache-2.0)
 - [Tesseract.js](https://github.com/naptha/tesseract.js) and Tesseract trained data (Apache-2.0)
 
