@@ -10,8 +10,8 @@ exports.handler = async (event) => {
   const code = qs.code || "", q = (qs.q || "").trim();
   let url;
   if (/^\d{6,14}$/.test(code)) url = `https://api.upcitemdb.com/prod/trial/lookup?upc=${code}`;
-  // product codes with letters (model numbers, ASINs): text search
-  else if (/^[A-Za-z0-9][A-Za-z0-9.\-\/]{2,39}$/.test(q)) url = `https://api.upcitemdb.com/prod/trial/search?s=${encodeURIComponent(q)}&match_mode=0&type=product`;
+  // product names, model numbers, ASINs: text search
+  else if (/^[\p{L}\p{N}][\p{L}\p{N} .,&'+\-\/]{1,59}$/u.test(q)) url = `https://api.upcitemdb.com/prod/trial/search?s=${encodeURIComponent(q)}&match_mode=0&type=product`;
   else return json(400, { error: "Invalid code" });
   try {
     const r = await fetch(url, {

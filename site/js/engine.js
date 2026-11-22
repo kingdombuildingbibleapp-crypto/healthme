@@ -228,6 +228,12 @@ function evaluateFactor(key, p) {
       sev = Math.max(sev, base);
     }
   }
+  // Sugar as one of the first ingredients means a lot of it, even when there's no nutrition panel
+  if (key === "sugar" && fromNutrient === null && p.ingredientsRaw) {
+    const top = p.ingredients.replace(/sugar[- ]free|no (added )?sugar|sugar alcohols?|unsweetened/g, " ").split(/[,;(]/).slice(0, 3).join(" ");
+    const m = top.match(/\b(sugar|cane sugar|high fructose corn syrup|corn syrup|glucose(-fructose)? syrup|glucose|fructose|sucrose|dextrose|honey|agave|syrup)\b/);
+    if (m) { sev = Math.max(sev, p.isDrink ? 1 : 0.8); found.unshift(m[1] + " near the top of the list"); }
+  }
   if (f.soft && !found.length) {
     for (const t of f.soft) if (termRe(t).test(text)) { found.push(t); sev = Math.max(sev, 0.35); }
   }
@@ -286,7 +292,12 @@ function scoreForCondition(p, cond) {
     const loss = weight * r.sev * 8;
     score -= loss;
     if (f.hard && weight >= 3) cap = Math.min(cap, r.trace ? 40 : 8);
-    else if (weight >= 3 && r.sev >= 0.9) cap = Math.min(cap, 45);
+    // "High" in the thing that matters most for this condition is a red X, not a caution
+    else if (weight >= 3 && r.sev >= 0.9) cap = Math.min(cap, 35);
+    // Sugary drinks hit blood sugar fastest (ADA: avoid sugar-sweetened beverages)
+    // Even with no sugar-related condition, a sweetened drink is a caution, not a green check (WHO / AHA guidance)
+    if (key === "sugar" && p.isDrink && p.nova !== 1 && (num(p, "sugars_100g") >= 8 || (r.nutrient === null && r.sev >= 0.8))) cap = Math.min(cap, 55);
+    if (key === "sugar" && weight >= 3 && p.isDrink && (num(p, "sugars_100g") >= 5 || (r.nutrient === null && r.sev >= 0.8))) cap = Math.min(cap, 25);
     reasons.push({
       type: r.trace ? "warn" : (weight >= 2 && r.sev >= 0.5) || (f.hard && weight >= 3) ? "bad" : "warn",
       factor: key, weight, impact: -loss, found: r.found,

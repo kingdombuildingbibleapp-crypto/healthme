@@ -305,7 +305,7 @@
     if (await S.torch(!torchOn)) { torchOn = !torchOn; $("camTorch").classList.toggle("on", torchOn); $("camTorch").setAttribute("aria-pressed", torchOn); }
   });
   $("camera").addEventListener("cancel", e => { e.preventDefault(); closeCamera(); });
-  $("camType").addEventListener("click", () => closeCamera().then(openTypeDialog));
+  $("camType").addEventListener("click", () => closeCamera().then(() => openTypeDialog()));
   document.addEventListener("visibilitychange", () => { if (document.hidden && $("camera").open) closeCamera(); });
   // get the barcode engine ready in the background so the first scan is quick
   if ("requestIdleCallback" in window) requestIdleCallback(() => S.warmUp()); else setTimeout(() => S.warmUp(), 1500);
@@ -320,18 +320,24 @@
     if (code) checkCode(code);
     else toast("No barcode found in that photo. Take it closer, with the whole barcode sharp and in view. Or type the number.", 6000);
   });
-  function showTypeError(msg) { $("codeErr").textContent = msg; $("codeErr").hidden = false; $("codeInput").focus(); }
-  $("codeInput").addEventListener("input", () => { $("codeErr").hidden = true; });
-  function openTypeDialog() { $("codeErr").hidden = true; $("codeInput").value = ""; $("typeDialog").showModal(); setTimeout(() => $("codeInput").focus(), 50); }
-  $("typeBtn").addEventListener("click", openTypeDialog);
+  function showTypeError(msg) { $("codeErr").textContent = msg; $("codeErrBox").hidden = false; $("codeInput").focus(); }
+  $("codeInput").addEventListener("input", () => { $("codeErrBox").hidden = true; });
+  // Try again: keep what was typed (so one wrong digit can be fixed) and put the cursor at the end
+  function openTypeDialog(prefill = "", msg = "") {
+    $("codeErrBox").hidden = true; $("codeInput").value = prefill;
+    if (msg) { $("codeErr").textContent = msg; $("codeErrBox").hidden = false; }
+    if (!$("typeDialog").open) $("typeDialog").showModal();
+    setTimeout(() => { const i = $("codeInput"); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }, 50);
+  }
+  $("codeRetry").addEventListener("click", () => openTypeDialog($("codeInput").value));
+  $("typeBtn").addEventListener("click", () => openTypeDialog());
   $("typeForm").addEventListener("submit", e => {
     e.preventDefault();
-    const raw = $("codeInput").value.trim();
-    if (/[a-z]/i.test(raw)) {
-      // product codes with letters (model numbers, Amazon ASINs, store codes) are searched by text
-      const text = raw.replace(/\s+/g, "").toUpperCase();
-      if (!/^[A-Z0-9][A-Z0-9.\-\/]{2,39}$/.test(text)) return showTypeError("Use only letters, numbers and dashes, at least 3 characters.");
-      $("typeDialog").close(); return checkCode(text);
+    const raw = $("codeInput").value.trim().replace(/\s+/g, " ");
+    if (/\p{L}/u.test(raw)) {
+      // product names, model numbers and codes with letters are searched by text in every database
+      if (!TEXT_RE.test(raw)) return showTypeError("Type at least 2 letters or numbers. Leave out symbols like # or *.");
+      $("typeDialog").close(); return checkCode(raw);
     }
     const code = raw.replace(/\D/g, "");
     if (code.length < 6 || code.length > 14) return showTypeError("Type all the numbers under the barcode. Most have 12 or 13 digits.");
@@ -378,42 +384,90 @@
     } catch {}
     return null;
   }
+  // Text search: product names, model numbers and codes with letters, across all five databases at once
+  const TEXT_RE = /^[\p{L}\p{N}][\p{L}\p{N} .,&'+\-\/]{1,59}$/u;
   async function lookupText(q) {
-    try {
-      const j = await fetchJSON(`/api/upc?q=${encodeURIComponent(q)}`, 10000);
-      if (j && j.title) return { source: "upc", generic: j };
-    } catch {}
-    return null;
-  }
-  async function checkCode(raw) {
-    const code = String(raw).trim();
-    const isText = /[A-Z]/i.test(code);
-    if (isText ? !/^[A-Z0-9][A-Z0-9.\-\/]{2,39}$/i.test(code) : !/^\d{6,14}$/.test(code)) return toast(`That code isn't a product code. Try the barcode on the package.`, 5000);
-    toast(`<span class="spinner"></span>Looking up <span class="mono">${esc(code)}</span>…`, 0);
-    let found = null;
-    try { found = isText ? await lookupText(code) : await lookup(code); } catch {}
-    $("toast").hidden = true;
-    if (!found) {
-      if (!navigator.onLine) return toast("You're offline. Connect to the internet to look up products.", 5000);
-      return openManual(code);
+    const tries = SOURCES.map(([key, base]) =>
+      fetchJSON(`${base}/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=8&fields=${FIELDS}`, 12000)
+        .then(j => (j.products || []).filter(pr => pr && (pr.product_name || pr.product_name_en) && pr.code).map(pr => ({ source: key, product: pr }))));
+    tries.push(fetchJSON(`/api/upc?q=${encodeURIComponent(q)}`, 10000).then(j => (j && j.title ? [{ source: "upc", generic: j }] : [])));
+    const settled = await Promise.allSettled(tries);
+    const all = settled.flatMap(r => (r.status === "fulfilled" ? r.value : []));
+    // an exact code match wins outright
+    const exact = all.find(x => x.product && x.product.code === q.replace(/\s/g, ""));
+    if (exact) return [exact];
+    // round-robin so one database doesn't crowd out the others; drop duplicates
+    const bySource = SOURCES.map(([k]) => all.filter(x => x.source === k)).concat([all.filter(x => x.source === "upc")]);
+    const out = [], seen = new Set();
+    for (let i = 0; out.length < 20 && bySource.some(l => l[i]); i++) for (const l of bySource) {
+      const x = l[i]; if (!x) continue;
+      const id = x.product ? x.product.code : "upc:" + x.generic.title;
+      if (!seen.has(id)) { seen.add(id); out.push(x); }
     }
+    return out;
+  }
+  function showFound(found, code) {
     const p = found.generic ? normalizeGeneric(found.generic) : normalizeOFF(found.product, found.source);
     if (found.generic && (p.kind === "food" || p.kind === "cosmetic") && !p.ingredientsRaw) {
       p.note = "Only the product name was found, so this rating is based on its name and category. Add ingredients for a more accurate rating.";
     }
-    showResult(p, code, found.source);
+    showResult(p, found.product?.code || code, found.source);
+  }
+  let searchHits = [];
+  function openSearchResults(q, hits) {
+    searchHits = hits;
+    $("searchHint").textContent = `${hits.length} match${hits.length === 1 ? "" : "es"} for "${q}". Tap yours.`;
+    $("searchList").innerHTML = hits.map((h, i) => {
+      const pr = h.product, g = h.generic;
+      const name = pr ? (pr.product_name_en || pr.product_name) : g.title;
+      const brand = pr ? (pr.brands || "").split(",")[0] : g.brand;
+      const img = pr ? (pr.image_front_small_url || pr.image_front_url || "") : g.image || "";
+      return `<li><button class="sr-row" data-i="${i}">
+        <span class="sr-img">${/^https:\/\//.test(img) ? `<img src="${esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ICON.pkg}</span>
+        <span class="sr-txt"><b>${esc(name)}</b><small>${esc([brand, pr?.quantity].filter(Boolean).join(" · "))}</small><em>${esc(SOURCE_NAME[h.source] || h.source)}${pr ? ` · <span class="mono">${esc(pr.code)}</span>` : ""}</em></span>
+      </button></li>`;
+    }).join("");
+    $("searchDialog").showModal();
+    $("searchList").scrollTop = 0;
+  }
+  $("searchList").addEventListener("click", e => {
+    const b = e.target.closest(".sr-row"); if (!b) return;
+    const h = searchHits[+b.dataset.i]; $("searchDialog").close();
+    showFound(h, h.product?.code || "");
+  });
+  $("searchNone").addEventListener("click", () => { $("searchDialog").close(); openManual(""); });
+  async function checkCode(raw) {
+    const code = String(raw).trim().replace(/\s+/g, " ");
+    const isText = /\p{L}/u.test(code);
+    if (isText ? !TEXT_RE.test(code) : !/^\d{6,14}$/.test(code)) return openTypeDialog(code, "That isn't a product code. Check it against the package and try again.");
+    toast(`<span class="spinner"></span>${isText ? "Searching" : "Looking up"} <span class="mono">${esc(code)}</span>…`, 0);
+    let found = null;
+    try { found = isText ? await lookupText(code) : await lookup(code); } catch {}
+    $("toast").hidden = true;
+    if (isText) {
+      if (found && found.length === 1) return showFound(found[0], code);
+      if (found && found.length) return openSearchResults(code, found);
+      found = null;
+    }
+    if (!found) {
+      if (!navigator.onLine) return toast("You're offline. Connect to the internet to look up products.", 5000);
+      return openManual(code);
+    }
+    showFound(found, code);
   }
 
   // ---------- manual product ----------
   let manualCode = "";
   function openManual(code, prefill) {
     manualCode = code || "";
+    $("manualRetry").hidden = !code;
     $("manualHint").textContent = code
       ? `We couldn't find ${code} in any product database. Type the product name and copy the ingredients from the label, and we'll rate it.`
       : "Type the product name and ingredients to rate it.";
     $("mName").value = prefill?.name || ""; $("mIng").value = prefill?.ingredients || ""; $("mKind").value = prefill?.kind || "food";
     $("manualDialog").showModal();
   }
+  $("manualRetry").addEventListener("click", () => { $("manualDialog").close(); openTypeDialog(manualCode); });
   $("manualForm").addEventListener("submit", e => {
     e.preventDefault();
     const kindSel = $("mKind").value;

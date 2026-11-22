@@ -444,3 +444,26 @@ textarea.field { resize: vertical; line-height: 1.4; }
 .cam-btn.on { background: #fff; color: #111; }
 .cam-top .cam-for { flex: 1; }
 .bad-text { color: var(--bad); font-weight: 700; margin: 8px 0 0; }
+
+/* ---------- text search results ---------- */
+.search-list { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 8px; max-height: 58vh; overflow-y: auto; }
+.sr-row { width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 16px; border: 1px solid var(--line, rgba(0,0,0,.08)); background: var(--glass-strong); color: var(--ink); text-align: left; font: inherit; cursor: pointer; }
+.sr-row:active { transform: scale(.99); }
+.sr-img { flex: none; width: 52px; height: 52px; border-radius: 12px; background: #fff; display: grid; place-items: center; overflow: hidden; color: var(--ink-2); }
+.sr-img img { width: 100%; height: 100%; object-fit: contain; }
+.sr-img svg { width: 26px; height: 26px; }
+.sr-txt { min-width: 0; display: grid; gap: 2px; }
+.sr-txt b { font-weight: 700; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.sr-txt small { color: var(--ink-2); }
+.sr-txt em { font-style: normal; font-size: .78rem; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.code-err { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.code-err .bad-text { flex: 1; margin: 0; }
+.retry-btn { margin-bottom: 4px; }
+.retry-btn svg { width: 18px; height: 18px; }
+
+/* sheets: keep full-width controls inside the 20px side gutters */
+dialog.sheet form { padding-inline: 20px; }
+dialog.sheet form > * { margin-left: 0; margin-right: 0; }
+dialog.sheet form > .sheet-head { margin-inline: -20px; }
+dialog.sheet > .wide, dialog.sheet > .field, dialog.sheet > .search-list, dialog.sheet > .two-col { width: auto; max-width: calc(100% - 40px); }
+dialog.sheet > .btn.wide { display: flex; width: calc(100% - 40px); }

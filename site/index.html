@@ -201,18 +201,32 @@
 <!-- ============ MANUAL BARCODE ============ -->
 <dialog class="sheet small-sheet" id="typeDialog" aria-labelledby="typeTitle">
   <form id="typeForm" method="dialog">
-    <div class="sheet-head"><h2 id="typeTitle">Enter product code</h2><button type="button" class="btn small ghost" data-close>Cancel</button></div>
-    <label class="field-label" for="codeInput">The numbers under the barcode, or any product code with letters</label>
-    <input class="field mono" id="codeInput" type="text" inputmode="text" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="search" maxlength="40" placeholder="e.g. 049000028911 or B07XJ8C8F5" required autocomplete="off">
-    <p class="status bad-text" id="codeErr" role="alert" hidden></p>
+    <div class="sheet-head"><h2 id="typeTitle">Find a product</h2><button type="button" class="btn small ghost" data-close>Cancel</button></div>
+    <label class="field-label" for="codeInput">Barcode number, product name, or model number</label>
+    <input class="field" id="codeInput" type="text" inputmode="text" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="search" maxlength="60" placeholder="e.g. 049000028911 or Cheerios" required autocomplete="off">
+    <div class="code-err" id="codeErrBox" hidden>
+      <p class="status bad-text" id="codeErr" role="alert"></p>
+      <button type="button" class="btn small" id="codeRetry">Try again</button>
+    </div>
     <button class="btn primary wide" type="submit">Check product</button>
   </form>
+</dialog>
+
+<!-- ============ TEXT SEARCH RESULTS ============ -->
+<dialog class="sheet" id="searchDialog" aria-labelledby="searchTitle">
+  <div class="sheet-head"><h2 id="searchTitle">Pick your product</h2><button class="btn small ghost" data-close>Cancel</button></div>
+  <p class="picker-hint" id="searchHint"></p>
+  <ul class="search-list" id="searchList"></ul>
+  <button class="btn ghost wide" id="searchNone">Not listed? Type the label in yourself</button>
 </dialog>
 
 <!-- ============ NOT FOUND / MANUAL PRODUCT ============ -->
 <dialog class="sheet" id="manualDialog" aria-labelledby="manualTitle">
   <form id="manualForm" method="dialog">
     <div class="sheet-head"><h2 id="manualTitle">Add product details</h2><button type="button" class="btn small ghost" data-close>Cancel</button></div>
+    <button type="button" class="btn wide retry-btn" id="manualRetry" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4.5h4.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Wrong number? Try again</button>
     <p class="picker-hint" id="manualHint">We couldn't find this barcode in any database. Type the product name and copy the ingredients from the label, and we'll rate it.</p>
     <label class="field-label" for="mName">Product name</label>
     <input class="field" id="mName" required placeholder="e.g. Lavender hand soap">
