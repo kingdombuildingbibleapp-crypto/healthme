@@ -214,9 +214,12 @@
   const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   async function doSave() {
     const r = await P.saveNow();
+    let cloud = null;
+    if (A.signedIn()) { try { await A.syncNow(); cloud = true; } catch { cloud = false; } }
     const all = P.all();
     const conds = all.reduce((n, p) => n + P.chosen(p).length, 0), photos = all.filter(p => P.validPhoto(p.photo)).length;
-    $("saveHeadline").textContent = r.ok ? "Saved on this phone" : "Couldn't save: this phone's storage is full";
+    $("saveHeadline").textContent = !r.ok ? "Couldn't save: this phone's storage is full"
+      : cloud ? "Saved to your account" : cloud === false ? "Saved on this phone (account will update when you're online)" : "Saved on this phone";
     $("saveWhen").textContent = r.ok ? `Just now, ${new Date(r.at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}` : "Free up space, or save a backup file below.";
     $("saveList").innerHTML = [
       `${all.length} profile${all.length === 1 ? "" : "s"}: ${all.map(p => esc(P.displayName(p))).join(", ")}`,
@@ -225,8 +228,10 @@
       `Conditions found in imported medical records`,
     ].map(t => `<li>${ICON.good || ""}<span>${t}</span></li>`).join("");
     const tips = [];
-    tips.push(r.persisted ? "Protected: your browser has agreed not to clear HealthyScan's data." : "Saved in two places on this phone, so it's harder to lose.");
-    if (isIOS) tips.push(isStandalone()
+    $("saveAcctBtn").hidden = $("saveAcctHint").hidden = A.signedIn();
+    if (A.signedIn()) tips.push(`Signed in as ${A.state().email}. Sign in on any phone to get everyone back.`);
+    else tips.push(r.persisted ? "Protected: your browser has agreed not to clear HealthyScan's data." : "Saved in two places on this phone, so it's harder to lose.");
+    if (isIOS && !A.signedIn()) tips.push(isStandalone()
       ? "Always open HealthyScan from this home-screen icon. Safari keeps a separate copy."
       : "Tip: on iPhone, Safari and a home-screen icon keep separate copies. Pick one way to open HealthyScan and stick with it, or use a backup file to move between them.");
     $("saveNote").textContent = tips.join(" ");
@@ -235,6 +240,81 @@
     $("saveBtn").classList.add("just-saved"); setTimeout(() => $("saveBtn").classList.remove("just-saved"), 1600);
   }
   $("saveBtn").addEventListener("click", doSave);
+  $("saveAcctBtn").addEventListener("click", () => { $("saveDialog").close(); openAccount(); });
+
+  // ---------- Account ----------
+  const A = window.HM_ACCOUNT;
+  let pendingConflict = null, deleteAcctArmed = false;
+  const acctMode = () => document.querySelector('input[name="acctMode"]:checked').value;
+  function syncAcctMode() {
+    const up = acctMode() === "signup";
+    $("acctPw2Wrap").hidden = !up;
+    $("acctPw").autocomplete = up ? "new-password" : "current-password";
+    $("acctSubmit").textContent = up ? "Create account and save" : "Sign in";
+    $("acctNote").hidden = !up;
+    $("acctErr").hidden = true;
+  }
+  document.querySelectorAll('input[name="acctMode"]').forEach(r => r.addEventListener("change", syncAcctMode));
+  function renderAccount() {
+    const st = A.state();
+    $("acctOut").hidden = st.signedIn; $("acctIn").hidden = !st.signedIn;
+    $("acctWho").textContent = st.email;
+    $("acctSync").textContent = st.syncing ? "Saving…" : st.error ? st.error
+      : st.at ? `Last saved to your account ${new Date(st.at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}` : "Signed in";
+    $("acctConflict").hidden = !pendingConflict;
+    $("acctSyncNow").hidden = !!pendingConflict;
+    $("menuAccount").textContent = st.signedIn ? `Account: ${st.email}` : "Account: sign up or sign in";
+    $("saveBtn").classList.toggle("cloud", st.signedIn);
+  }
+  A.onChange(renderAccount);
+  function openAccount() {
+    deleteAcctArmed = false; $("acctDelete").textContent = "Delete my account"; $("acctStatus").textContent = "";
+    $("acctErr").hidden = true; $("acctPw").value = ""; $("acctPw2").value = "";
+    syncAcctMode(); renderAccount();
+    if (!$("accountDialog").open) $("accountDialog").showModal();
+  }
+  $("menuAccount").addEventListener("click", () => { $("menuDialog").close(); openAccount(); });
+  $("acctForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const email = $("acctEmail").value.trim(), pw = $("acctPw").value, up = acctMode() === "signup";
+    const err = m => { $("acctErr").textContent = m; $("acctErr").hidden = false; };
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return err("Enter a valid email address.");
+    if (pw.length < 8) return err("Use at least 8 characters for your password.");
+    if (up && pw !== $("acctPw2").value) return err("The two passwords don't match.");
+    $("acctSubmit").disabled = true; $("acctSubmit").innerHTML = '<span class="spinner"></span> ' + (up ? "Creating your account…" : "Signing in…");
+    try {
+      if (up) {
+        await A.signup(email, pw);
+        toast("Account created. Your profiles are saved to it.", 4000);
+      } else {
+        const r = await A.login(email, pw);
+        if (r.conflict) pendingConflict = r;
+        else if (r.restored) { renderHome(); toast("Welcome back! Your profiles are here.", 4000); }
+        else toast("Signed in. This phone's profiles are now saved to your account.", 4000);
+      }
+      $("acctPw").value = $("acctPw2").value = "";
+      renderAccount();
+    } catch (ex) { err(ex.message || "Something went wrong. Try again."); }
+    finally { $("acctSubmit").disabled = false; syncAcctMode(); }
+  });
+  $("acctUseAccount").addEventListener("click", () => { pendingConflict.useAccount(); pendingConflict = null; renderHome(); renderAccount(); toast("Your account's profiles are now on this phone."); });
+  $("acctKeepPhone").addEventListener("click", async () => { const c = pendingConflict; pendingConflict = null; renderAccount(); try { await c.keepPhone(); toast("This phone's profiles are saved to your account."); } catch (e) { toast(esc(e.message), 5000); } });
+  $("acctSyncNow").addEventListener("click", async () => {
+    $("acctStatus").textContent = "Saving…";
+    try { await A.syncNow(); $("acctStatus").textContent = "Saved to your account."; } catch (e) { $("acctStatus").textContent = e.message; }
+  });
+  $("acctLogout").addEventListener("click", async () => {
+    await A.logout(); pendingConflict = null; renderAccount();
+    toast("Signed out. Your profiles are still on this phone.");
+  });
+  $("acctDelete").addEventListener("click", async () => {
+    if (!deleteAcctArmed) { deleteAcctArmed = true; $("acctDelete").textContent = "Tap again to delete your account for good"; return; }
+    try { await A.deleteAccount(); renderAccount(); $("accountDialog").close(); toast("Account deleted. Your profiles are still on this phone."); }
+    catch (e) { $("acctStatus").textContent = e.message; }
+  });
+  renderAccount();
+  // when the app opens, pick up changes saved from another phone
+  P.ready.then(() => A.refresh()).then(changed => { if (changed) { renderHome(); toast("Updated with changes from your account."); } });
   $("saveFileBtn").addEventListener("click", () => { downloadBackup(); $("saveStatus").textContent = "Backup file saved to your downloads or Files app."; });
   // if profiles were brought back from the second copy, show them
   P.ready.then(restored => { if (restored) { renderHome(); toast("Welcome back! Your saved profiles were restored.", 4000); } });

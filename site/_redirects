@@ -1,1 +1,2 @@
 /api/upc  /.netlify/functions/upc  200
+/api/account  /.netlify/functions/account  200

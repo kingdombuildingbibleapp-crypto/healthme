@@ -47,6 +47,7 @@
     const ok = write(KEY, profiles); write(ACTIVE, activeId);
     lastSaved = Date.now(); write("hm:lastSaved", lastSaved);
     if (idbReady) idbPut("state", { profiles, activeId, savedAt: lastSaved }).catch(() => {});
+    try { window.dispatchEvent(new Event("hm:saved")); } catch {}
     return ok;
   };
   // On a fresh start, look for a copy in IndexedDB before anything overwrites it

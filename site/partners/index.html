@@ -115,7 +115,7 @@
       <div class="glass panel">
         <h3>Where data lives</h3>
         <ul class="ticks">
-          <li><b>On the patient's device only.</b> Profiles, conditions and scan history are stored in the phone's browser storage. HealthyScan runs no database and no user accounts.</li>
+          <li><b>On the patient's device by default.</b> Profiles, conditions and scan history are stored in the phone's browser storage. An optional account syncs an end-to-end encrypted copy: it is encrypted on the phone with a key derived from the patient's password, so HealthyScan stores only ciphertext it cannot read.</li>
           <li><b>Records are read on the device.</b> PDFs, photos (text recognition), CCD/XML and FHIR data are parsed in the browser. The record text is discarded after analysis and only approved findings are kept.</li>
           <li><b>Product lookups send only a barcode number</b> to open product databases, never health information.</li>
           <li><b>No trackers.</b> No analytics, ad pixels or third-party fonts or scripts. This is enforced by a strict Content-Security-Policy and HSTS.</li>

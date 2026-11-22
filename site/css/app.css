@@ -535,3 +535,12 @@ dialog.sheet > .btn.wide { display: flex; width: calc(100% - 40px); }
 .logo-badge { display: block; width: 62px; height: 62px; border-radius: 15px; box-shadow: 0 8px 18px -8px rgba(184, 58, 14, .7); }
 .logo-badge { border-radius: 0; box-shadow: none; filter: drop-shadow(0 2px 6px rgba(255,255,255,.9)) drop-shadow(0 0 2px rgba(255,255,255,.9)); }
 .logo-badge { width: 78px; height: 78px; margin: -6px 0 -6px -4px; }
+
+/* ---------- account ---------- */
+.acct-tabs { margin-top: 6px; }
+.acct-note { margin: 12px 0 0; padding: 10px 12px; border-radius: 14px; background: rgba(61,123,255,.1); font-size: .86rem; line-height: 1.45; }
+.acct-conflict { margin: 12px 0; padding: 14px; border-radius: 16px; background: rgba(242,190,69,.18); }
+.acct-conflict p { margin: 4px 0 6px; }
+.save-btn.cloud::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #7CFFB0; box-shadow: 0 0 0 2px rgba(255,255,255,.6); margin-left: 2px; }
+.logo-badge { width: 58px; height: 58px; margin: 0; border-radius: 14px; filter: none; box-shadow: 0 8px 18px -8px rgba(21, 55, 184, .7); }
+#acctForm { padding-inline: 0; }

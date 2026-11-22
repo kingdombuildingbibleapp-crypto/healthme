@@ -1,0 +1,8 @@
+{
+  "name": "healthyscan",
+  "private": true,
+  "description": "HealthyScan static site and Netlify Functions",
+  "dependencies": {
+    "@netlify/blobs": "^11.1.9"
+  }
+}
