@@ -489,3 +489,61 @@ dialog.sheet > .btn.wide { display: flex; width: calc(100% - 40px); }
 @media (min-aspect-ratio: 1/1) { .sc-prod { height: 62%; background-position: center 72%; } .sc-food { background-position: center 30%; } }
 .orb-hint { display: inline-block; padding: 4px 12px; border-radius: 999px; background: rgba(255,255,255,.62); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .orb-hint { background: rgba(20,22,26,.55); } }
+
+/* ---------- more color + gentle motion ---------- */
+.sc-food, .sc-prod { filter: saturate(1.35) brightness(1.04); will-change: transform; }
+.sc-food { animation: kenburns 28s ease-in-out infinite alternate; transform-origin: 30% 40%; }
+.sc-prod { animation: floaty 9s ease-in-out infinite alternate; transform-origin: 50% 100%; }
+@keyframes kenburns { from { transform: scale(1.02) translate(0, 0); } to { transform: scale(1.12) translate(-2%, 1.5%); } }
+@keyframes floaty { from { transform: translateY(0) scale(1.02); } to { transform: translateY(-10px) scale(1.04); } }
+/* drifting rainbow light over everything */
+.sc-glow { position: absolute; inset: -20%; mix-blend-mode: soft-light; opacity: .9;
+  background:
+    radial-gradient(closest-side, rgba(255, 64, 160, .75), transparent) 10% 20% / 55% 45% no-repeat,
+    radial-gradient(closest-side, rgba(255, 210, 0, .8), transparent) 85% 30% / 50% 40% no-repeat,
+    radial-gradient(closest-side, rgba(0, 210, 255, .7), transparent) 25% 80% / 55% 45% no-repeat,
+    radial-gradient(closest-side, rgba(120, 255, 90, .65), transparent) 80% 85% / 50% 40% no-repeat;
+  animation: glowdrift 18s ease-in-out infinite alternate; }
+@keyframes glowdrift {
+  0% { transform: translate(0, 0) rotate(0deg); filter: hue-rotate(0deg); }
+  50% { transform: translate(4%, -3%) rotate(8deg); }
+  100% { transform: translate(-4%, 3%) rotate(-6deg); filter: hue-rotate(60deg); } }
+/* lighter veil so the colors come through, still keeping text readable at the top */
+.sc-veil { background:
+    radial-gradient(ellipse 60% 26% at 50% 44%, rgba(255,255,255,.45), transparent 70%),
+    linear-gradient(rgba(255,250,246,.78) 0, rgba(255,250,246,.5) 20%, rgba(255,250,246,.12) 40%, rgba(255,250,246,.06) 66%, rgba(255,250,246,.3) 100%); }
+/* floating soap bubbles in every color */
+.sc-bubbles { position: absolute; inset: 0; overflow: hidden; }
+.sc-bubbles i { position: absolute; bottom: -60px; width: 22px; height: 22px; border-radius: 50%;
+  background: radial-gradient(circle at 32% 30%, rgba(255,255,255,.95) 0 14%, rgba(255,255,255,.15) 16% 60%, var(--c) 100%);
+  box-shadow: inset 0 0 6px rgba(255,255,255,.6), 0 0 14px -2px var(--c); opacity: .85;
+  animation: rise-b var(--d) linear infinite; animation-delay: var(--t); }
+.sc-bubbles i:nth-child(1)  { left: 6%;  --c: #FF4FA3; --d: 16s; --t: -2s;  width: 26px; height: 26px; }
+.sc-bubbles i:nth-child(2)  { left: 16%; --c: #FFC400; --d: 21s; --t: -9s; }
+.sc-bubbles i:nth-child(3)  { left: 27%; --c: #00C2FF; --d: 18s; --t: -5s;  width: 16px; height: 16px; }
+.sc-bubbles i:nth-child(4)  { left: 38%; --c: #7CFF5A; --d: 24s; --t: -14s; width: 30px; height: 30px; }
+.sc-bubbles i:nth-child(5)  { left: 49%; --c: #B85CFF; --d: 19s; --t: -1s;  width: 14px; height: 14px; }
+.sc-bubbles i:nth-child(6)  { left: 58%; --c: #FF7A2F; --d: 22s; --t: -11s; }
+.sc-bubbles i:nth-child(7)  { left: 67%; --c: #00E0B0; --d: 17s; --t: -7s;  width: 28px; height: 28px; }
+.sc-bubbles i:nth-child(8)  { left: 76%; --c: #FF3B5C; --d: 25s; --t: -3s;  width: 18px; height: 18px; }
+.sc-bubbles i:nth-child(9)  { left: 85%; --c: #3D7BFF; --d: 20s; --t: -16s; }
+.sc-bubbles i:nth-child(10) { left: 93%; --c: #FFD84D; --d: 23s; --t: -6s;  width: 24px; height: 24px; }
+.sc-bubbles i:nth-child(11) { left: 33%; --c: #FF66D9; --d: 27s; --t: -19s; width: 12px; height: 12px; }
+.sc-bubbles i:nth-child(12) { left: 72%; --c: #66F0FF; --d: 26s; --t: -12s; width: 12px; height: 12px; }
+@keyframes rise-b {
+  0%   { transform: translate(0, 0) scale(.8); opacity: 0; }
+  8%   { opacity: .85; }
+  50%  { transform: translate(18px, -55vh) scale(1); }
+  92%  { opacity: .8; }
+  100% { transform: translate(-14px, -110vh) scale(1.15); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .sc-food, .sc-prod, .sc-glow { animation: none; }
+  .sc-bubbles { display: none; }
+}
+.sc-bubbles i { width: calc(var(--s, 30px)); height: calc(var(--s, 30px)); opacity: 1;
+  background: radial-gradient(circle at 32% 28%, #fff 0 12%, rgba(255,255,255,.35) 14% 45%, color-mix(in srgb, var(--c) 55%, transparent) 70%, var(--c) 100%);
+  box-shadow: inset 0 0 8px rgba(255,255,255,.7), 0 0 18px 0 var(--c); }
+.sc-bubbles i:nth-child(1) { --s: 40px; } .sc-bubbles i:nth-child(2) { --s: 30px; } .sc-bubbles i:nth-child(3) { --s: 24px; }
+.sc-bubbles i:nth-child(4) { --s: 46px; } .sc-bubbles i:nth-child(5) { --s: 22px; } .sc-bubbles i:nth-child(6) { --s: 34px; }
+.sc-bubbles i:nth-child(7) { --s: 42px; } .sc-bubbles i:nth-child(8) { --s: 28px; } .sc-bubbles i:nth-child(9) { --s: 32px; }
+.sc-bubbles i:nth-child(10) { --s: 38px; } .sc-bubbles i:nth-child(11) { --s: 20px; } .sc-bubbles i:nth-child(12) { --s: 20px; }

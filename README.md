@@ -55,4 +55,4 @@ HealthyScan gives general guidance from ingredient and nutrition data. It is not
 
 Homepage background photos are from Unsplash under the [Unsplash License](https://unsplash.com/license) (free for commercial use, no attribution required). They're credited here as a courtesy:
 - Fresh produce flat lay: `photo-1610348725531-843dff563e2c`
-- Unbranded personal-care bottles: `photo-1631390179406-0bfe17e9f89d`
+- Unbranded personal-care bottles: `photo-1631390179406-0bfe17e9f89d` (recolored, new backdrop)
