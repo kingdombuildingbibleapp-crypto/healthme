@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Epic Registration Worksheet</title>
+<meta name="description" content="Values for registering HealthyScan on Epic on FHIR.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/css/fonts.css">
+<link rel="stylesheet" href="/partners/partners.css">
+</head>
+<body>
+<div class="blobs" aria-hidden="true"><span class="b1"></span><span class="b2"></span></div>
+<header class="topbar"><div class="wrap topbar-in">
+<a class="brand" href="/"><svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="9" fill="var(--accent)"/><path d="M9 16.5l4.5 4.5L23 11" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="wordmark">Healthy<b>Scan</b></span></a>
+<nav class="nav" aria-label="Site"><a href="/">App</a><a href="/partners/">Health systems</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a></nav>
+</div></header>
+<main class="wrap doc">
+<p class="kicker">Internal worksheet · Not linked publicly</p>
+<h1>Epic on FHIR registration worksheet</h1>
+<p class="lede">Copy these values into <a href="https://fhir.epic.com" target="_blank" rel="noopener">fhir.epic.com</a> → <b>Build Apps</b> → <b>Create</b>. Field names may differ slightly from Epic's current form.</p>
+
+<h2>Before you start</h2>
+<ul>
+<li>Sign up at fhir.epic.com with partners@healthyscan.net or your own email. You'll need to verify the email address.</li>
+<li>These public pages must load, because Epic asks for them: <a href="/privacy/">healthyscan.net/privacy/</a> and <a href="/terms/">healthyscan.net/terms/</a>.</li>
+</ul>
+
+<h2>Values to enter</h2>
+<table class="mini-table ws">
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Application name</td><td>HealthyScan</td></tr>
+<tr><td>Application audience</td><td><b>Patients</b> (patient-facing)</td></tr>
+<tr><td>Incoming APIs</td><td>Choose the <b>read</b> (R4) APIs for: Patient, Condition (Problems, Encounter diagnosis, Health concern), AllergyIntolerance, MedicationRequest, Observation (Labs, Vital signs). For automatic distribution, select <b>only USCDI read APIs</b> (no write, no non-USCDI).</td></tr>
+<tr><td>Redirect URI(s)</td><td><code>https://healthyscan.net/</code><br><code>https://www.healthyscan.net/</code></td></tr>
+<tr><td>Confidential client / client secret</td><td><b>No</b>. HealthyScan is a public client using PKCE. Leave secrets, JWKS and certificates blank</td></tr>
+<tr><td>Refresh tokens / offline access</td><td><b>No</b>. HealthyScan does a one-time import</td></tr>
+<tr><td>SMART on FHIR version</td><td>R4 · SMART v1 scopes (patient/*.read)</td></tr>
+<tr><td>Is the app a SMART on FHIR app?</td><td>Yes</td></tr>
+<tr><td>Automatic client distribution</td><td>Yes, to the latest USCDI version offered (e.g. "USCDI v3")</td></tr>
+<tr><td>Summary / description</td><td>HealthyScan helps patients choose foods and products that fit their health conditions. With the patient's permission, it imports their problem list, allergies, medications and recent lab results (read-only) to rate scanned products green, yellow or red. Data is processed and stored only on the patient's device. No data is sent to HealthyScan servers.</td></tr>
+<tr><td>Privacy policy URL</td><td><code>https://healthyscan.net/privacy/</code></td></tr>
+<tr><td>Terms of use URL</td><td><code>https://healthyscan.net/terms/</code></td></tr>
+<tr><td>Website</td><td><code>https://healthyscan.net</code></td></tr>
+<tr><td>Contact email</td><td><code>partners@healthyscan.net</code></td></tr>
+</table>
+
+<h2>After saving</h2>
+<ol>
+<li>Copy the <b>Non-Production Client ID</b> and the <b>Production Client ID</b>.</li>
+<li>Send both to your developer. They're public identifiers, not secrets, and safe to email. They go in <code>/js/ehr.js</code> to switch on "Epic test patients" and production MyChart connections.</li>
+<li>Test with Epic's sandbox test patients (credentials are listed on fhir.epic.com under "Test Data").</li>
+<li>Mark the app <b>Ready for Production</b> when sandbox testing passes.</li>
+</ol>
+
+<h2>If the form won't let you continue</h2>
+<ul>
+<li><b>"Redirect URI invalid":</b> it must be HTTPS and match exactly, including the trailing slash.</li>
+<li><b>Can't select automatic distribution:</b> remove any API that isn't a USCDI read API.</li>
+<li><b>It asks for a public key or JWKS:</b> you've picked a backend or confidential app type. Choose Patients as the audience and turn off confidential client.</li>
+<li><b>Account pending or verification:</b> check the inbox and spam folder of the email you signed up with.</li>
+</ul>
+</main>
+<footer class="wrap foot"><p>HealthyScan · <a href="mailto:partners@healthyscan.net">partners@healthyscan.net</a></p></footer>
+</body>
+</html>

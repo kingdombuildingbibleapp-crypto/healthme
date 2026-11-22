@@ -158,6 +158,22 @@ h1 { margin: 0; font: 800 clamp(2rem, 4.6vw, 3.2rem)/1.06 var(--f-d); letter-spa
 .foot { padding-block: 26px 48px; }
 .foot p { font-size: .76rem; color: var(--muted); max-width: 90ch; margin: 0; }
 
+.gloss { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 860px) { .gloss { grid-template-columns: 1fr; } }
+.gloss dl { margin: 0; display: grid; gap: 7px; }
+.gloss dl > div { display: grid; grid-template-columns: 96px 1fr; gap: 10px; font-size: .86rem; }
+.gloss dt { font: 700 .8rem/1.5 var(--f-m); color: var(--accent); }
+.gloss dd { margin: 0; color: var(--ink-2); line-height: 1.45; }
+.gloss dd b { color: var(--ink); font-weight: 700; }
+
+.doc { max-width: 760px; padding-block: 40px 20px; }
+.doc h1 { font-size: clamp(2rem, 5vw, 2.6rem); }
+.doc h2 { font: 800 1.25rem/1.25 var(--f-d); margin: 30px 0 8px; }
+.doc p, .doc li { color: var(--ink-2); }
+.doc ul, .doc ol { padding-left: 22px; display: grid; gap: 6px; }
+.doc code { font: .85rem var(--f-m); background: var(--peri-soft); padding: 1px 6px; border-radius: 6px; overflow-wrap: anywhere; }
+.ws td:first-child { width: 34%; font-family: var(--f-b); font-size: .88rem; }
+
 @media print {
   @page { size: Letter; margin: 14mm; }
   body { background: #fff; font-size: 11pt; color: #2E2311; }
@@ -167,7 +183,24 @@ h1 { margin: 0; font: 800 clamp(2rem, 4.6vw, 3.2rem)/1.06 var(--f-d); letter-spa
   .section { padding-block: 16px 0; break-inside: auto; }
   .hc-verdict, .panel, .stat, .flow li, .hurdle, .roi, .ready > div, .hero-card { break-inside: avoid; }
   .h2, h3 { break-after: avoid; }
-  #privacy, #pilot { break-before: page; }
+  #privacy, #pilot, #glossary { break-before: page; }
+  .gloss-group { break-inside: avoid; }
   .roi-out { background: #F7F5F2; }
   a { color: #2E2311; }
+  .contact { margin-top: 12px; padding: 14px; break-inside: avoid; }
+  .foot { display: none; }
+  .print-only { display: block !important; font-size: 8pt; }
+  .gloss dl { gap: 3px; }
+  .gloss dl > div { font-size: .8rem; }
+  .gloss-group { padding: 14px 18px; }
+  .gloss { gap: 10px; }
 }
+.print-only { display: none; }
+/* phone fixes */
+.gloss dl > div > * { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 560px) {
+  .gloss dl > div { grid-template-columns: 78px 1fr; }
+  .topbar-in { flex-wrap: wrap; row-gap: 6px; }
+  .nav { flex-wrap: wrap; gap: 4px 12px; }
+}
+.panel, .gloss-group { min-width: 0; }

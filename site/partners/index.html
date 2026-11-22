@@ -19,7 +19,7 @@
       <span class="wordmark">Healthy<b>Scan</b></span>
     </a>
     <nav class="nav" aria-label="Sections">
-      <a href="#roi">ROI</a><a href="#privacy">HIPAA</a><a href="#ehr">Epic &amp; FHIR</a><a href="#pilot">Pilot</a>
+      <a href="#roi">ROI</a><a href="#privacy">HIPAA</a><a href="#ehr">Epic &amp; FHIR</a><a href="#pilot">Pilot</a><a href="#glossary">Glossary</a>
     </nav>
   </div>
 </header>
@@ -185,12 +185,13 @@
         <li>SMART on FHIR patient-portal import (PKCE, read-only)</li>
         <li>No PHI on servers, no trackers, strict CSP and HSTS</li>
         <li>Open-source components under Apache-2.0 and OFL licenses</li>
+        <li>Draft <a href="/privacy/">privacy policy</a> and <a href="/terms/">terms of use</a> published</li>
       </ul></div>
       <div><h3 class="next">Before a pilot</h3><ul>
         <li>Epic registration on fhir.epic.com and sandbox validation</li>
         <li>Clinical content review by a dietitian and clinician advisor</li>
         <li>WCAG 2.1 AA accessibility audit</li>
-        <li>Privacy policy, terms, FTC breach-response plan</li>
+        <li>Legal review of the draft privacy policy and terms; FTC breach-response plan</li>
         <li>Independent penetration test</li>
       </ul></div>
       <div><h3 class="later">For sponsored scale</h3><ul>
@@ -203,10 +204,95 @@
     </div>
   </section>
 
+  <!-- GLOSSARY -->
+  <section class="wrap section" id="glossary">
+    <h2 class="h2">Glossary</h2>
+    <p class="body">Acronyms used in this brief and in HealthyScan.</p>
+    <div class="gloss">
+      <div class="glass panel gloss-group"><h3>Healthcare data and interoperability</h3><dl>
+        <div><dt>EHR</dt><dd><b>Electronic Health Record</b> — The hospital&#x27;s patient record system, such as Epic</dd></div>
+        <div><dt>FHIR</dt><dd><b>Fast Healthcare Interoperability Resources</b> — The modern web standard for exchanging health data. HealthyScan reads records this way</dd></div>
+        <div><dt>R4</dt><dd><b>FHIR Release 4</b> — The FHIR version used by Epic and most U.S. health systems</dd></div>
+        <div><dt>SMART</dt><dd><b>Substitutable Medical Applications, Reusable Technologies</b> — The standard way apps sign patients in to an EHR (&quot;SMART on FHIR&quot;)</dd></div>
+        <div><dt>HL7</dt><dd><b>Health Level Seven</b> — The standards body behind FHIR. HL7 v2 is an older message format HealthyScan doesn&#x27;t need</dd></div>
+        <div><dt>US Core</dt><dd><b>US Core Implementation Guide</b> — The U.S. rules for which FHIR data fields systems must support</dd></div>
+        <div><dt>USCDI</dt><dd><b>United States Core Data for Interoperability</b> — The federally required set of patient data that EHRs must share</dd></div>
+        <div><dt>ICD-10</dt><dd><b>International Classification of Diseases, 10th Revision</b> — Diagnosis codes in medical records, like E11.9 for type 2 diabetes</dd></div>
+        <div><dt>CCD / C-CDA</dt><dd><b>Continuity of Care Document / Consolidated Clinical Document Architecture</b> — Downloadable XML record summaries from patient portals</dd></div>
+        <div><dt>API</dt><dd><b>Application Programming Interface</b> — A way for software to request data from other software</dd></div>
+        <div><dt>MyChart</dt><dd><b>Epic&#x27;s patient portal</b> — Used by Novant Health, Atrium Health and many others</dd></div>
+      </dl></div>
+      <div class="glass panel gloss-group"><h3>Privacy, security and regulation</h3><dl>
+        <div><dt>HIPAA</dt><dd><b>Health Insurance Portability and Accountability Act</b> — The federal health privacy law</dd></div>
+        <div><dt>PHI</dt><dd><b>Protected Health Information</b> — Health data that HIPAA protects</dd></div>
+        <div><dt>BAA</dt><dd><b>Business Associate Agreement</b> — The contract a hospital signs with a vendor that handles PHI for it</dd></div>
+        <div><dt>HHS</dt><dd><b>U.S. Department of Health and Human Services</b> — Enforces HIPAA through its Office for Civil Rights (OCR)</dd></div>
+        <div><dt>FTC</dt><dd><b>Federal Trade Commission</b> — Regulates privacy for health apps that HIPAA doesn&#x27;t cover</dd></div>
+        <div><dt>HBNR</dt><dd><b>Health Breach Notification Rule</b> — The FTC rule requiring breach notices within 60 days</dd></div>
+        <div><dt>FDA</dt><dd><b>Food and Drug Administration</b> — Regulates medical devices, including software that diagnoses or treats</dd></div>
+        <div><dt>OAuth 2.0</dt><dd><b>Open Authorization</b> — The secure sign-in standard SMART uses</dd></div>
+        <div><dt>PKCE</dt><dd><b>Proof Key for Code Exchange</b> — An OAuth safeguard that protects sign-in on phones</dd></div>
+        <div><dt>CSP</dt><dd><b>Content-Security-Policy</b> — A browser setting that blocks unapproved scripts and trackers</dd></div>
+        <div><dt>HSTS</dt><dd><b>HTTP Strict Transport Security</b> — Forces browsers to always use an encrypted connection</dd></div>
+        <div><dt>HTTPS / TLS</dt><dd><b>Hypertext Transfer Protocol Secure / Transport Layer Security</b> — The encrypted web connection behind the padlock in the browser</dd></div>
+        <div><dt>SOC 2</dt><dd><b>System and Organization Controls 2</b> — An independent security audit hospitals often require</dd></div>
+        <div><dt>WCAG 2.1 AA</dt><dd><b>Web Content Accessibility Guidelines, level AA</b> — The accessibility standard hospitals expect</dd></div>
+      </dl></div>
+      <div class="glass panel gloss-group"><h3>Finance and outcomes</h3><dl>
+        <div><dt>ROI</dt><dd><b>Return on Investment</b> — Value delivered compared with cost</dd></div>
+        <div><dt>MVP</dt><dd><b>Minimum Viable Product</b> — A working first version that people can actually use</dd></div>
+        <div><dt>CMS</dt><dd><b>Centers for Medicare &amp; Medicaid Services</b> — Runs Medicare and the readmission penalty program</dd></div>
+        <div><dt>HRRP</dt><dd><b>Hospital Readmissions Reduction Program</b> — The CMS program that cuts payments to hospitals with high readmission rates</dd></div>
+        <div><dt>AHRQ</dt><dd><b>Agency for Healthcare Research and Quality</b> — Federal agency, source of the $16,300 readmission-cost figure</dd></div>
+        <div><dt>HCUP</dt><dd><b>Healthcare Cost and Utilization Project</b> — AHRQ&#x27;s national hospital database</dd></div>
+        <div><dt>ACO</dt><dd><b>Accountable Care Organization</b> — A value-based arrangement where avoided readmissions become savings</dd></div>
+        <div><dt>ED / ER</dt><dd><b>Emergency Department / Emergency Room</b> — Emergency visits, which the pilot measures</dd></div>
+        <div><dt>RN</dt><dd><b>Registered Nurse</b> — Used in the nurse-time part of the ROI model</dd></div>
+        <div><dt>QR</dt><dd><b>Quick Response code</b> — The scannable code on the discharge card</dd></div>
+      </dl></div>
+      <div class="glass panel gloss-group"><h3>Clinical terms</h3><dl>
+        <div><dt>HF / CHF</dt><dd><b>Heart Failure / Congestive Heart Failure</b></dd></div>
+        <div><dt>CAD</dt><dd><b>Coronary Artery Disease</b></dd></div>
+        <div><dt>AFib</dt><dd><b>Atrial Fibrillation</b></dd></div>
+        <div><dt>BP</dt><dd><b>Blood Pressure</b></dd></div>
+        <div><dt>CKD</dt><dd><b>Chronic Kidney Disease</b></dd></div>
+        <div><dt>eGFR</dt><dd><b>Estimated Glomerular Filtration Rate</b> — A kidney-function lab</dd></div>
+        <div><dt>A1c</dt><dd><b>Hemoglobin A1c</b> — The 3-month blood sugar lab</dd></div>
+        <div><dt>LDL</dt><dd><b>Low-Density Lipoprotein</b> — &quot;Bad&quot; cholesterol</dd></div>
+        <div><dt>TSH</dt><dd><b>Thyroid-Stimulating Hormone</b></dd></div>
+        <div><dt>BMI</dt><dd><b>Body Mass Index</b></dd></div>
+        <div><dt>COPD</dt><dd><b>Chronic Obstructive Pulmonary Disease</b></dd></div>
+        <div><dt>GERD</dt><dd><b>Gastroesophageal Reflux Disease</b></dd></div>
+        <div><dt>IBS</dt><dd><b>Irritable Bowel Syndrome</b></dd></div>
+        <div><dt>NAFLD</dt><dd><b>Non-Alcoholic Fatty Liver Disease</b></dd></div>
+        <div><dt>PCOS</dt><dd><b>Polycystic Ovary Syndrome</b></dd></div>
+        <div><dt>ADHD</dt><dd><b>Attention-Deficit/Hyperactivity Disorder</b></dd></div>
+        <div><dt>PKU</dt><dd><b>Phenylketonuria</b></dd></div>
+        <div><dt>G6PD</dt><dd><b>Glucose-6-Phosphate Dehydrogenase deficiency</b></dd></div>
+        <div><dt>MAOI</dt><dd><b>Monoamine Oxidase Inhibitor</b> — Antidepressant class with food interactions</dd></div>
+        <div><dt>SSRI / SNRI</dt><dd><b>Selective Serotonin / Serotonin–Norepinephrine Reuptake Inhibitor</b></dd></div>
+        <div><dt>ACE / ARB</dt><dd><b>Angiotensin-Converting Enzyme inhibitor / Angiotensin Receptor Blocker</b> — Blood pressure medicines that affect potassium</dd></div>
+        <div><dt>GLP-1</dt><dd><b>Glucagon-Like Peptide-1</b> — Medications such as Ozempic</dd></div>
+      </dl></div>
+      <div class="glass panel gloss-group"><h3>Technology</h3><dl>
+        <div><dt>PWA</dt><dd><b>Progressive Web App</b> — Installs to the home screen like an app</dd></div>
+        <div><dt>OCR</dt><dd><b>Optical Character Recognition</b> — Reading text from photos (not HHS&#x27;s OCR)</dd></div>
+        <div><dt>UPC / EAN</dt><dd><b>Universal Product Code / European Article Number</b> — Barcode types</dd></div>
+        <div><dt>PDF</dt><dd><b>Portable Document Format</b></dd></div>
+        <div><dt>XML / JSON</dt><dd><b>Extensible Markup Language / JavaScript Object Notation</b> — Data file formats</dd></div>
+        <div><dt>DNS</dt><dd><b>Domain Name System</b> — Where domain records live</dd></div>
+        <div><dt>CDN</dt><dd><b>Content Delivery Network</b></dd></div>
+        <div><dt>ODbL / OFL</dt><dd><b>Open Database License / Open Font License</b> — Licenses for product data and fonts</dd></div>
+      </dl></div>
+    </div>
+  </section>
+
   <section class="wrap section contact glass" id="contact">
     <h2 class="h2">Talk to us</h2>
     <p class="body">We're looking for one innovation partner in the Carolinas to run the first pilot.</p>
     <p class="contact-line">Email <a href="mailto:partners@healthyscan.net">partners@healthyscan.net</a> · Try it at <a href="/">healthyscan.net</a></p>
+    <p class="micro"><a href="/privacy/">Privacy policy</a> · <a href="/terms/">Terms of use</a></p>
+    <p class="micro print-only">HealthyScan provides general guidance from ingredient and nutrition data and is not medical advice. Novant Health, Atrium Health, Epic and MyChart are trademarks of their respective owners and are named only to describe compatibility. No endorsement is implied.</p>
   </section>
 
   <footer class="wrap foot">
