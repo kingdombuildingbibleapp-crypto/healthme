@@ -416,3 +416,18 @@ textarea.field { resize: vertical; line-height: 1.4; }
 .scan-orb > .ring { width: 100%; height: 100%; display: block; }
 .fam .avatar.ghost { background: transparent !important; border: 2px dashed var(--peri) !important; box-shadow: none; color: var(--ink-2); }
 .fam .avatar.ghost > svg { position: static; width: 22px; height: 22px; padding: 0; background: none; box-shadow: none; color: var(--ink-2); }
+
+/* patient portal */
+.ehr-box { display: grid; gap: 8px; }
+.ehr-btn { margin-top: 0; min-height: 54px; font-size: 1.02rem; }
+.ehr-sub { margin: 0; color: var(--ink-2); font-size: .86rem; }
+.ehr-list { display: grid; gap: 8px; margin-top: 4px; }
+.ehr-opt { display: grid; gap: 2px; text-align: left; padding: 12px 14px; border-radius: 16px; border: 1px solid var(--line); background: var(--bg); }
+.ehr-opt b { font-size: .95rem; }
+.ehr-opt small { color: var(--muted); font-size: .8rem; }
+.ehr-opt:not([disabled]):hover { border-color: var(--accent); }
+.ehr-opt[disabled] { opacity: .55; cursor: not-allowed; }
+.ehr-other .field-label { margin-top: 6px; }
+.small-mono { font-size: .9rem; letter-spacing: 0; }
+.or { display: flex; align-items: center; gap: 10px; margin: 18px 0 12px; color: var(--muted); font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+.or::before, .or::after { content: ""; flex: 1; height: 1px; background: var(--line); }

@@ -556,6 +556,48 @@
     $("recordApply").disabled = !n;
   }
   $("recordFindings").addEventListener("change", updateApply);
+
+  // ---------- patient portal (SMART on FHIR) ----------
+  function renderEhrList() {
+    const E = window.HM_EHR;
+    const rows = E.PROVIDERS.map((p, i) => `<button class="ehr-opt" data-i="${i}" ${p.clientId ? "" : "disabled"}>
+        <b>${esc(p.name)}</b><small>${esc(p.clientId ? p.sub : p.sub + " Available after registration.")}</small></button>`).join("");
+    $("ehrList").innerHTML = rows + `<form class="ehr-other" id="ehrOther">
+        <label class="field-label" for="ehrIss">Other health system (FHIR address)</label>
+        <input class="field mono small-mono" id="ehrIss" type="url" placeholder="https://…/api/FHIR/R4" required>
+        <button class="btn wide" type="submit" ${E.DEFAULT_CLIENT_ID ? "" : "disabled"}>${E.DEFAULT_CLIENT_ID ? "Connect" : "Available after registration"}</button></form>`;
+  }
+  $("ehrBtn").addEventListener("click", () => { renderEhrList(); $("ehrList").hidden = !$("ehrList").hidden; });
+  $("ehrList").addEventListener("click", async e => {
+    const b = e.target.closest(".ehr-opt"); if (!b || b.disabled) return;
+    const p = window.HM_EHR.PROVIDERS[Number(b.dataset.i)];
+    recordStatus('<span class="spinner"></span>Opening ' + esc(p.name) + ' sign-in…');
+    try { await window.HM_EHR.connect(p, P.active().id); }
+    catch (err) { recordStatus(String(err.message || err) === "no-client-id" ? "This portal isn't connected yet." : "Couldn't reach that patient portal. Check your connection and try again.", true); }
+  });
+  $("ehrList").addEventListener("submit", async e => {
+    e.preventDefault();
+    const iss = $("ehrIss").value.trim();
+    try { await window.HM_EHR.connect({ iss, clientId: window.HM_EHR.DEFAULT_CLIENT_ID, name: new URL(iss).hostname }, P.active().id); }
+    catch { recordStatus("Couldn't reach that address. Check it's a SMART on FHIR R4 endpoint.", true); }
+  });
+  async function finishEhrImport() {
+    if (!window.HM_EHR || !window.HM_EHR.isReturning()) return;
+    toast('<span class="spinner"></span>Importing from your patient portal…', 0);
+    try {
+      const res = await window.HM_EHR.complete();
+      $("toast").hidden = true;
+      if (res.profileId && P.get(res.profileId)) P.setActive(res.profileId);
+      renderHome(); resetRecord();
+      $("recordDialog").showModal();
+      findings = res.text.trim() ? window.HM_RECORDS.analyzeText(res.text) : [];
+      renderFindings();
+      const c = res.counts;
+      $("recordSummary").textContent = `Imported from ${res.source}: ${c.conditions} diagnoses, ${c.allergies} allergies, ${c.meds} medications, ${c.observations} results. ` + $("recordSummary").textContent;
+    } catch (err) {
+      toast("The patient portal sign-in didn't finish. " + esc(String(err.message || "").slice(0, 120)), 6000);
+    }
+  }
   $("recordFile").addEventListener("change", e => {
     const file = e.target.files?.[0]; e.target.value = "";
     if (file) readRecord(pr => window.HM_RECORDS.extractText(file, pr));
@@ -592,5 +634,6 @@
   document.querySelectorAll("dialog.sheet").forEach(d => d.addEventListener("click", e => { if (e.target === d) d.close(); }));
 
   renderHome();
+  finishEhrImport();
   if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("/sw.js").catch(() => {});
 })();

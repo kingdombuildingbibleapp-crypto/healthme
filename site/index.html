@@ -13,9 +13,7 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/icons/icon-180.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="/css/fonts.css">
 <link rel="stylesheet" href="/css/app.css">
 </head>
 <body>
@@ -231,6 +229,15 @@
     <p><b>The record never leaves this phone.</b> HealthyScan reads it here, shows you what it found, and saves only what you approve to this profile. The file itself isn't kept or uploaded.</p>
   </div>
   <div id="recordStep1">
+    <div class="ehr-box">
+      <button class="btn primary wide ehr-btn" id="ehrBtn" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM9 21v-6h6v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+        Connect my patient portal
+      </button>
+      <p class="ehr-sub">Sign in to MyChart or another patient portal and import diagnoses, allergies, medications and lab results directly. Read-only, and only with your permission.</p>
+      <div class="ehr-list" id="ehrList" hidden></div>
+    </div>
+    <div class="or"><span>or upload a record</span></div>
     <label class="drop" for="recordFile">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <b>Choose a file or take a photo</b>
@@ -296,6 +303,7 @@
 <script src="/js/conditions.js"></script>
 <script src="/js/engine.js"></script>
 <script src="/js/records.js"></script>
+<script src="/js/ehr.js"></script>
 <script src="/js/samples.js"></script>
 <script src="/js/profiles.js"></script>
 <script src="/js/app.js"></script>

@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HealthyScan for Health Systems</title>
+<meta name="description" content="HealthyScan extends discharge and chronic-care dietary instructions to the moment of purchase. Patient-authorized Epic/FHIR import, on-device privacy, and a 90-day pilot design.">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/css/fonts.css">
+<link rel="stylesheet" href="/partners/partners.css">
+</head>
+<body>
+<div class="blobs" aria-hidden="true"><span class="b1"></span><span class="b2"></span></div>
+
+<header class="topbar">
+  <div class="wrap topbar-in">
+    <a class="brand" href="/">
+      <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="9" fill="var(--accent)"/><path d="M9 16.5l4.5 4.5L23 11" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="wordmark">Healthy<b>Scan</b></span>
+    </a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#roi">ROI</a><a href="#privacy">HIPAA</a><a href="#ehr">Epic &amp; FHIR</a><a href="#pilot">Pilot</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <p class="kicker">For health systems · Partner brief</p>
+        <h1>Discharge instructions end at the door. Patients' next decision happens in the grocery aisle.</h1>
+        <p class="lede">HealthyScan turns a patient's own diagnoses, allergies, medications and labs, imported from MyChart with their permission, into a green, yellow or red verdict on any product they scan. It's built to support diet adherence after discharge and between visits, without adding work for nurses.</p>
+        <div class="cta-row">
+          <a class="btn primary" href="/">Open the working MVP</a>
+          <a class="btn" href="/partners/HealthyScan-Partner-Packet.pdf">Download the PDF packet</a>
+        </div>
+        <p class="micro">Live at healthyscan.net · Works on any phone browser · No sign-up · No patient data on our servers</p>
+      </div>
+      <div class="hero-card glass" aria-label="Example verdict">
+        <div class="hc-row"><span class="av" style="--av:#E8457A">DM</span><div><b>Dorothy, 71</b><small>Heart failure · Type 2 diabetes · Warfarin</small></div></div>
+        <div class="hc-product"><span class="hc-thumb" aria-hidden="true"></span><div><b>Canned chicken noodle soup</b><small>Scanned at checkout</small></div></div>
+        <div class="hc-verdict v-bad">
+          <svg viewBox="0 0 100 100" class="ring" aria-hidden="true"><circle cx="50" cy="50" r="42" class="trk"/><circle cx="50" cy="50" r="42" class="prg" style="stroke-dashoffset:224"/></svg>
+          <div><span class="big">15%</span><b>Not recommended</b><small>High sodium (1.7 g per serving) · Ultra-processed</small></div>
+        </div>
+        <p class="hc-foot">Illustrative example. Ratings come from published nutrition data and the patient's imported record.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- THREE HURDLES -->
+  <section class="wrap hurdles" aria-label="Summary">
+    <article class="hurdle glass"><span class="num">MVP</span><h2>Working product, not mockups</h2><p>A live, installable web app with 318 conditions, 23 medication groups, barcode scanning, family and child profiles, and on-device record import. Clinicians can try it today.</p></article>
+    <article class="hurdle glass"><span class="num">HIPAA · FHIR</span><h2>Privacy by architecture</h2><p>Records go from Epic to the patient's phone through patient-authorized SMART on FHIR. Nothing is stored on a HealthyScan server. No interface build is needed from your IT team.</p></article>
+    <article class="hurdle glass"><span class="num">ROI</span><h2>Measured on outcomes</h2><p>A 90-day pilot measured on 30-day readmissions, diet-related ED visits and nurse teaching time, with an editable model below.</p></article>
+  </section>
+
+  <!-- PROBLEM -->
+  <section class="wrap section" id="problem">
+    <h2 class="h2">The gap we close</h2>
+    <div class="stats">
+      <div class="stat glass"><span class="stat-n">$16,300</span><p>Average cost of a 30-day all-cause readmission in 2020, 12.4% higher than the index stay. <a href="https://hcup-us.ahrq.gov/reports/statbriefs/sb304-readmissions-2016-2020.jsp" target="_blank" rel="noopener">AHRQ HCUP Statistical Brief #304</a></p></div>
+      <div class="stat glass"><span class="stat-n">18.4%</span><p>Risk-adjusted 30-day heart failure readmission rate in the HRRP penalty phase, in a national registry analysis. <a href="https://jamanetwork.com/journals/jamacardiology/article-abstract/2663213" target="_blank" rel="noopener">JAMA Cardiology</a></p></div>
+      <div class="stat glass"><span class="stat-n">&lt; 15 min</span><p>Typical time nurses spent on heart failure education at three hospitals. Researchers said this is not enough time to confirm patients understand. <a href="https://consultqd.clevelandclinic.org/study-examines-nurses-comfort-in-educating-patients" target="_blank" rel="noopener">Cleveland Clinic</a></p></div>
+    </div>
+    <p class="body">Sodium limits, allergen avoidance, warfarin and vitamin K, statins and grapefruit: patients get this guidance at discharge, then face 30,000 products alone. HealthyScan carries each patient's own instructions to the moment of purchase, every time they shop.</p>
+  </section>
+
+  <!-- WORKFLOW -->
+  <section class="wrap section" id="workflow">
+    <h2 class="h2">How it works in your workflow</h2>
+    <ol class="flow">
+      <li class="glass"><span class="step">1</span><b>Recommend at discharge</b><p>The nurse or dietitian hands over a QR card or mentions it in the After Visit Summary. No EHR order or build is needed.</p></li>
+      <li class="glass"><span class="step">2</span><b>Patient connects MyChart</b><p>The patient signs in to your patient portal, which uses SMART on FHIR, and approves read-only access. Diagnoses, allergies, medications and recent labs import to their phone.</p></li>
+      <li class="glass"><span class="step">3</span><b>Patient reviews</b><p>Every finding shows the line of the record it came from. The patient confirms or unchecks each one. Nothing is added without approval.</p></li>
+      <li class="glass"><span class="step">4</span><b>Scan anything</b><p>Food, supplements, skincare, cleaners. Each product gets a verdict for the patient, and for every child or dependent on the same phone.</p></li>
+      <li class="glass optional"><span class="step">5</span><b>Optional, phase 2: outcomes to the care team</b><p>With patient consent and a BAA, aggregate adherence signals can be reported to care managers. This is not part of the MVP.</p></li>
+    </ol>
+  </section>
+
+  <!-- ROI -->
+  <section class="wrap section" id="roi">
+    <h2 class="h2">ROI model</h2>
+    <p class="body">Defaults use published figures where they exist. Every input marked <span class="tag-a">Assumption</span> is a hypothesis for the pilot to confirm or correct. Change any value.</p>
+    <div class="roi glass">
+      <div class="roi-inputs">
+        <label class="sel-label" for="preset">Use case</label>
+        <select id="preset" class="field">
+          <option value="hf">Heart failure: 30-day readmissions</option>
+          <option value="custom">Custom cohort</option>
+        </select>
+        <div class="inputs" id="inputs"></div>
+      </div>
+      <div class="roi-out" aria-live="polite">
+        <div class="out-big"><span id="oNet">$0</span><small>Estimated net annual value</small></div>
+        <dl class="out-list">
+          <div><dt>Patients enrolled</dt><dd id="oEnrolled">0</dd></div>
+          <div><dt>Events avoided per year</dt><dd id="oAvoided">0</dd></div>
+          <div><dt>Avoided event cost</dt><dd id="oSavings">$0</dd></div>
+          <div><dt>Nurse hours returned</dt><dd id="oHours">0</dd></div>
+          <div><dt>Program cost</dt><dd id="oCost">$0</dd></div>
+          <div class="roi-x"><dt>Return on program cost</dt><dd id="oRoi">0×</dd></div>
+        </dl>
+        <p class="note">Who captures the value depends on contract type. Avoided readmissions are savings under value-based, capitated and ACO arrangements and reduce exposure to the Medicare <a href="https://www.cms.gov/medicare/payment/prospective-payment-systems/acute-inpatient-pps/hospital-readmissions-reduction-program-hrrp" target="_blank" rel="noopener">Hospital Readmissions Reduction Program</a> penalty. HRRP penalty avoidance is not included above.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRIVACY -->
+  <section class="wrap section" id="privacy">
+    <h2 class="h2">HIPAA and patient data protection</h2>
+    <div class="two">
+      <div class="glass panel">
+        <h3>Where data lives</h3>
+        <ul class="ticks">
+          <li><b>On the patient's device only.</b> Profiles, conditions and scan history are stored in the phone's browser storage. HealthyScan runs no database and no user accounts.</li>
+          <li><b>Records are read on the device.</b> PDFs, photos (text recognition), CCD/XML and FHIR data are parsed in the browser. The record text is discarded after analysis and only approved findings are kept.</li>
+          <li><b>Product lookups send only a barcode number</b> to open product databases, never health information.</li>
+          <li><b>No trackers.</b> No analytics, ad pixels or third-party fonts or scripts. This is enforced by a strict Content-Security-Policy and HSTS.</li>
+          <li><b>Read-only EHR access.</b> The OAuth token is used once for import and then cleared. HealthyScan never writes to the EHR.</li>
+        </ul>
+      </div>
+      <div class="glass panel">
+        <h3>Regulatory position</h3>
+        <table class="mini-table">
+          <tr><th>Deployment</th><th>Status</th><th>Obligations</th></tr>
+          <tr><td>Consumer app, patient-selected (today)</td><td>Not a HIPAA covered entity or business associate under HHS app guidance</td><td><a href="https://www.ftc.gov/business-guidance/blog/2024/04/updated-ftc-health-breach-notification-rule-puts-new-provisions-place-protect-users-health-apps" target="_blank" rel="noopener">FTC Health Breach Notification Rule</a>: breach notice within 60 days</td></tr>
+          <tr><td>Health-system sponsored or paid</td><td>Business associate</td><td>BAA, HIPAA Security Rule safeguards, risk analysis, breach notification to the covered entity</td></tr>
+        </table>
+        <p class="small">Per <a href="https://www.hhs.gov/hipaa/for-professionals/special-topics/health-apps/index.html" target="_blank" rel="noopener">HHS: Health App Use Scenarios &amp; HIPAA</a>, a developer is generally a business associate when it is hired or paid by a covered entity and handles PHI at its direction. HealthyScan will sign a BAA for any sponsored deployment. Because the default architecture keeps PHI on the device, the HIPAA surface stays small.</p>
+        <p class="small"><b>FDA:</b> HealthyScan is intended to support healthy choices and adherence to clinician-provided dietary guidance. It does not diagnose or treat. Labeling and claims will be reviewed by regulatory counsel before any sponsored launch.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- EHR -->
+  <section class="wrap section" id="ehr">
+    <h2 class="h2">Epic and FHIR integration</h2>
+    <div class="two">
+      <div class="glass panel">
+        <h3>How it connects</h3>
+        <ul class="ticks">
+          <li><b>SMART on FHIR R4 standalone patient launch.</b> OAuth 2.0 authorization code flow with PKCE, as a public client. The patient signs in through your MyChart.</li>
+          <li><b>Read-only USCDI / US Core data.</b> No custom interfaces, HL7 v2 feeds or write-back are needed for the MVP.</li>
+          <li><b>Epic route:</b> register as a patient-facing app on <a href="https://fhir.epic.com" target="_blank" rel="noopener">fhir.epic.com</a> with USCDI read scopes. Epic documents automatic client-ID distribution to participating Epic organizations for this app type, so a Novant or Atrium MyChart patient could connect without a site-by-site build. Each health system's own review still applies.</li>
+          <li><b>Phase 2 options:</b> a provider-launched SMART app inside Epic so clinicians can attach a "nutrition prescription" at discharge, and FHIR write-back of patient-reported data, each scoped with your IT team.</li>
+        </ul>
+      </div>
+      <div class="glass panel">
+        <h3>FHIR resources and scopes</h3>
+        <table class="mini-table">
+          <tr><th>Resource</th><th>Scope</th><th>Used for</th></tr>
+          <tr><td>Patient</td><td>patient/Patient.read</td><td>Patient context</td></tr>
+          <tr><td>Condition</td><td>patient/Condition.read</td><td>Problem list, ICD-10 codes (inactive or resolved are skipped)</td></tr>
+          <tr><td>AllergyIntolerance</td><td>patient/AllergyIntolerance.read</td><td>Food, latex and other allergens</td></tr>
+          <tr><td>MedicationRequest</td><td>patient/MedicationRequest.read</td><td>Drug–food interactions (warfarin, statins, MAOIs, metronidazole…)</td></tr>
+          <tr><td>Observation</td><td>patient/Observation.read</td><td>A1c, LDL, eGFR, potassium, BP and BMI thresholds</td></tr>
+        </table>
+        <p class="small">Status: the patient-portal import is built and tested end to end against a SMART on FHIR test server. Connecting to Epic's sandbox and production endpoints requires HealthyScan's Epic client ID, which is the next step on the readiness list.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PILOT -->
+  <section class="wrap section" id="pilot">
+    <h2 class="h2">Proposed 90-day pilot</h2>
+    <p class="body">Shaped for innovation teams that test whether a service is desirable, feasible and viable before scaling. Atrium Health's <a href="https://atriumhealth.org/about-us/newsroom/news/2023/09/design-for-impact-atrium-health-innovation-team-reshaping-business-and-outcomes" target="_blank" rel="noopener">Design for Impact</a> process is one example.</p>
+    <div class="pilot">
+      <div class="glass panel"><h3>Scope</h3><ul class="ticks"><li>One service line: heart failure transitional care, or a pediatric food-allergy clinic</li><li>150–300 consenting patients at discharge or visit</li><li>Matched comparison cohort from the same unit</li><li>No EHR build. Patients connect MyChart themselves</li></ul></div>
+      <div class="glass panel"><h3>Measures</h3><ul class="ticks"><li>30-day readmission and ED revisit rate, from your data warehouse</li><li>Enrollment and 30/60/90-day active use</li><li>Patient-reported confidence choosing foods</li><li>Nurse discharge-teaching minutes, measured by time study</li></ul></div>
+      <div class="glass panel"><h3>Timeline</h3><ul class="ticks"><li><b>Weeks 0–2:</b> security review, BAA if sponsored, staff huddle</li><li><b>Weeks 2–10:</b> enrollment and use</li><li><b>Weeks 10–13:</b> outcome readout and go or no-go</li></ul></div>
+    </div>
+  </section>
+
+  <!-- READINESS -->
+  <section class="wrap section" id="readiness">
+    <h2 class="h2">Readiness checklist</h2>
+    <div class="ready glass">
+      <div><h3 class="ok">Done</h3><ul>
+        <li>Live MVP at healthyscan.net, installable on iPhone and Android</li>
+        <li>318 conditions, 23 medication groups, child age rules</li>
+        <li>On-device record import: PDF, photo, CCD/XML, FHIR</li>
+        <li>SMART on FHIR patient-portal import (PKCE, read-only)</li>
+        <li>No PHI on servers, no trackers, strict CSP and HSTS</li>
+        <li>Open-source components under Apache-2.0 and OFL licenses</li>
+      </ul></div>
+      <div><h3 class="next">Before a pilot</h3><ul>
+        <li>Epic registration on fhir.epic.com and sandbox validation</li>
+        <li>Clinical content review by a dietitian and clinician advisor</li>
+        <li>WCAG 2.1 AA accessibility audit</li>
+        <li>Privacy policy, terms, FTC breach-response plan</li>
+        <li>Independent penetration test</li>
+      </ul></div>
+      <div><h3 class="later">For sponsored scale</h3><ul>
+        <li>Business Associate Agreement template</li>
+        <li>HIPAA risk analysis and written security policies</li>
+        <li>SOC 2 Type II, if a server component is added</li>
+        <li>Cyber liability insurance</li>
+        <li>Native app store wrappers, if required</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <section class="wrap section contact glass" id="contact">
+    <h2 class="h2">Talk to us</h2>
+    <p class="body">We're looking for one innovation partner in the Carolinas to run the first pilot.</p>
+    <p class="contact-line">Email <a href="mailto:partners@healthyscan.net">partners@healthyscan.net</a> · Try it at <a href="/">healthyscan.net</a></p>
+  </section>
+
+  <footer class="wrap foot">
+    <p>HealthyScan provides general guidance from ingredient and nutrition data and is not medical advice. Novant Health, Atrium Health, Epic and MyChart are trademarks of their respective owners and are named only to describe compatibility. No endorsement is implied.</p>
+  </footer>
+</main>
+<script src="/partners/roi.js"></script>
+</body>
+</html>

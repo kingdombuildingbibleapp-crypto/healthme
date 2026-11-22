@@ -1,6 +1,6 @@
 // Caches the app shell so HealthyScan opens instantly and works offline (lookups still need a connection).
-const CACHE = "healthyscan-v5";
-const SHELL = ["/", "/index.html", "/css/app.css", "/js/conditions.js", "/js/engine.js", "/js/records.js", "/js/profiles.js", "/js/samples.js", "/js/app.js", "/vendor/html5-qrcode.min.js", "/icons/icon.svg", "/manifest.webmanifest"];
+const CACHE = "healthyscan-v6";
+const SHELL = ["/", "/index.html", "/css/app.css", "/js/conditions.js", "/js/engine.js", "/js/records.js", "/js/profiles.js", "/js/ehr.js", "/css/fonts.css", "/js/samples.js", "/js/app.js", "/vendor/html5-qrcode.min.js", "/icons/icon.svg", "/manifest.webmanifest"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener("fetch", e => {
