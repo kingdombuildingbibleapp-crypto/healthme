@@ -50,3 +50,9 @@ Connect this repository to Netlify. `netlify.toml` sets the publish folder and f
 ## Disclaimer
 
 HealthyScan gives general guidance from ingredient and nutrition data. It is not medical advice and can miss things. Always read the label and follow your doctor's advice, especially for allergies.
+
+## Background photos
+
+Homepage background photos are from Unsplash under the [Unsplash License](https://unsplash.com/license) (free for commercial use, no attribution required). They're credited here as a courtesy:
+- Fresh produce flat lay: `photo-1610348725531-843dff563e2c`
+- Unbranded personal-care bottles: `photo-1631390179406-0bfe17e9f89d`
