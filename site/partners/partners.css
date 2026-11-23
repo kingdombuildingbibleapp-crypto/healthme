@@ -42,7 +42,7 @@ a { color: var(--accent); text-underline-offset: 2px; }
 .topbar { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 78%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
 .topbar-in { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 12px; }
 .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
-.logo { width: 30px; height: 30px; }
+.logo { width: 52px; height: 52px; border-radius: 13px; box-shadow: 0 6px 14px -8px rgba(21, 55, 184, .7); }
 .wordmark { font: 800 1.3rem/1 var(--f-d); letter-spacing: -0.02em; }
 .wordmark b { color: var(--accent); }
 .nav { display: flex; gap: 18px; font-weight: 700; font-size: .92rem; }
