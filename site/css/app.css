@@ -633,3 +633,28 @@ dialog.sheet > .btn.wide { display: flex; width: calc(100% - 40px); }
 .cd-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; background: rgba(31,157,91,.1); font-size: .8rem; font-weight: 700; }
 .cd-chip svg { width: 14px; height: 14px; color: var(--good, #1F9D5B); }
 .cd-look { margin: 4px 0 12px; padding: 10px 12px; border-radius: 14px; background: rgba(61,123,255,.08); font-size: .9rem; }
+
+/* ---------- plan pill, install, paywall ---------- */
+.plan-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: -8px; }
+.plan-pill { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px; border: 0; font: 600 .86rem/1.2 var(--f-body); cursor: pointer; box-shadow: 0 4px 12px -8px rgba(0,0,0,.4); }
+.plan-pill.trial { background: #FFF3D6; color: #7A5200; }
+.plan-pill.over { background: #FFE1DA; color: #A8321F; }
+.plan-pill.ok { background: rgba(31,157,91,.14); color: #17694A; cursor: default; }
+.plan-pill.install { background: #1537B8; color: #fff; }
+.plan-pill.install svg { width: 16px; height: 16px; }
+.pay-sheet .sheet-head { background: transparent; }
+.pay-hero { text-align: center; }
+.pay-hero img { border-radius: 18px; box-shadow: 0 12px 24px -12px rgba(21,55,184,.8); }
+.pay-hero h2 { margin: 12px 0 6px; font: 800 1.5rem/1.15 var(--f-display); }
+.pay-hero p { margin: 0 auto; max-width: 34ch; color: var(--ink-2); }
+.pay-price { margin: 14px auto 4px; display: inline-grid; justify-items: center; padding: 10px 22px; border-radius: 18px; background: linear-gradient(135deg, rgba(61,123,255,.12), rgba(255,154,77,.14)); }
+.pay-price b { font: 800 2.2rem/1 var(--f-display); color: #1537B8; }
+.pay-price span { font-size: .85rem; font-weight: 700; color: var(--ink-2); }
+.pay-list { list-style: none; margin: 14px 0; padding: 0; display: grid; gap: 8px; }
+.pay-list li { position: relative; padding-left: 30px; font-weight: 600; }
+.pay-list li::before { content: "✓"; position: absolute; left: 0; top: -1px; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--good, #1F9D5B); color: #fff; font-size: .8rem; font-weight: 800; }
+.pay-buy { display: flex; justify-content: center; text-decoration: none; font-size: 1.1rem; padding-block: 16px; }
+.pay-buy.disabled { opacity: .55; }
+.pay-restore { margin: 10px 0; } .pay-restore summary { cursor: pointer; font-weight: 700; color: var(--accent); }
+.install-steps { margin: 10px 0 12px; padding-left: 22px; display: grid; gap: 10px; font-size: 1rem; }
+.share-ic { display: inline-block; padding: 0 6px; border-radius: 6px; background: rgba(61,123,255,.12); color: #1F4FD1; }

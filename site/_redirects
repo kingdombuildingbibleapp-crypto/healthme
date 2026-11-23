@@ -1,2 +1,4 @@
 /api/upc  /.netlify/functions/upc  200
 /api/account  /.netlify/functions/account  200
+/api/license  /.netlify/functions/license  200
+/api/stripe-webhook  /.netlify/functions/stripe-webhook  200

@@ -433,11 +433,71 @@
   $("pickerDone").addEventListener("click", () => $("picker").close());
   $("picker").addEventListener("close", renderHome);
 
+  // ---------- trial, lifetime unlock, install ----------
+  const PAY = window.HM_PAY;
+  function openPaywall(reason) {
+    const st = PAY.state();
+    $("payWhy").textContent = reason || (st.expired ? "Your 3-day free trial has ended. Keep every feature, forever, for one small price."
+      : `You have ${st.daysLeft} day${st.daysLeft === 1 ? "" : "s"} left in your free trial. Unlock now and keep every feature, forever.`);
+    $("payStatus").textContent = "";
+    const url = PAY.checkoutUrl(window.HM_ACCOUNT?.state().email);
+    $("payBuy").href = url || "#";
+    $("payBuy").classList.toggle("disabled", !url);
+    if (!$("payDialog").open) $("payDialog").showModal();
+  }
+  $("payBuy").addEventListener("click", e => {
+    if (!PAY.hasCheckout()) { e.preventDefault(); $("payStatus").textContent = "Checkout is almost ready. Please check back soon."; return; }
+    try { P.saveNow(); } catch {}                        // make sure profiles are saved before leaving for checkout
+  });
+  $("restoreForm").addEventListener("submit", async e => {
+    e.preventDefault(); $("payStatus").textContent = "Looking up your purchase…";
+    try { await PAY.restore($("restoreEmail").value); $("payDialog").close(); toast("Purchase restored. HealthyScan is unlocked for life. 🎉", 5000); }
+    catch (ex) { $("payStatus").textContent = ex.message; }
+  });
+  // features that need the trial or a license
+  function needAccess() {
+    if (PAY.canUse()) return true;
+    openPaywall();
+    return false;
+  }
+  function renderPlan() {
+    const st = PAY.state(), pill = $("planPill");
+    pill.hidden = !st.live && !st.licensed;
+    pill.className = "plan-pill " + (st.licensed ? "ok" : st.expired ? "over" : "trial");
+    pill.innerHTML = st.licensed ? "✓ Lifetime unlocked"
+      : st.expired ? `Trial ended · <b>Unlock for ${PAY.PRICE}</b>`
+      : `Free trial: ${st.daysLeft} day${st.daysLeft === 1 ? "" : "s"} left · <b>Unlock for ${PAY.PRICE}</b>`;
+  }
+  $("planPill").addEventListener("click", () => { if (!PAY.state().licensed) openPaywall(); });
+  PAY.onChange(renderPlan); renderPlan(); setInterval(renderPlan, 60e3);
+  // back from Stripe checkout: ?paid={CHECKOUT_SESSION_ID}
+  (async () => {
+    const sid = new URLSearchParams(location.search).get("paid");
+    if (!sid) return;
+    window.history.replaceState(null, "", location.pathname);
+    toast('<span class="spinner"></span>Confirming your purchase…', 0);
+    try { await PAY.claim(sid); $("toast").hidden = true; toast("Thank you! HealthyScan is unlocked for life, including every future feature. 🎉", 6000); }
+    catch (e) { $("toast").hidden = true; openPaywall(e.message); }
+  })();
+  // "Download the app" (install as a home-screen app)
+  let installEvt = null;
+  const standalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; $("installBtn").hidden = standalone(); });
+  window.addEventListener("appinstalled", () => { $("installBtn").hidden = true; toast("HealthyScan is on your home screen."); });
+  $("installBtn").hidden = standalone();
+  // don't open the photo picker if the trial is over
+  document.querySelectorAll('label[for="photoInput"]').forEach(l => l.addEventListener("click", e => { if (!PAY.canUse()) { e.preventDefault(); openPaywall(); } }));
+  $("installBtn").addEventListener("click", async () => {
+    if (installEvt) { installEvt.prompt(); try { await installEvt.userChoice; } catch {} installEvt = null; return; }
+    $("installDialog").showModal();
+  });
+
   // ---------- camera ----------
   const S = window.HM_SCANNER;
   let handling = false, hintTimer = 0, torchOn = false;
   const CAM_MSG = "Hold the barcode inside the frame, about a hand's width away";
   async function openCamera() {
+    if (!needAccess()) return;
     $("camMsg").textContent = "Starting camera…";
     $("camTorch").hidden = true; torchOn = false; $("camTorch").classList.remove("on");
     $("camera").showModal();
@@ -485,7 +545,7 @@
 
   $("photoInput").addEventListener("change", async e => {
     const file = e.target.files?.[0]; e.target.value = "";
-    if (!file) return;
+    if (!file || !needAccess()) return;
     await closeCamera();
     toast('<span class="spinner"></span>Reading barcode from photo…', 0);
     let code = null;
@@ -497,6 +557,7 @@
   $("codeInput").addEventListener("input", () => { $("codeErrBox").hidden = true; });
   // Try again: keep what was typed (so one wrong digit can be fixed) and put the cursor at the end
   function openTypeDialog(prefill = "", msg = "") {
+    if (!needAccess()) return;
     $("codeErrBox").hidden = true; $("codeInput").value = prefill;
     if (msg) { $("codeErr").textContent = msg; $("codeErrBox").hidden = false; }
     if (!$("typeDialog").open) $("typeDialog").showModal();
@@ -830,6 +891,7 @@
   }
   let recRun = 0;
   async function openRecommendations() {
+    if (!needAccess()) return;
     const pr = P.active(), mine = pr.kind === "self", who = mine ? "You" : P.displayName(pr);
     const run = ++recRun;
     $("recTitle").textContent = mine ? "Recommendations for my conditions" : `Recommendations for ${who}`;
@@ -1094,7 +1156,7 @@
     $("recordSaved").hidden = !n;
     if (n && me.recordMeta) $("recordSavedText").textContent = `${n} item${n > 1 ? "s" : ""} saved from a record on ${new Date(me.recordMeta.t).toLocaleDateString()}. They're used on every scan, so there's no need to upload again.`;
   }
-  $("openRecord").addEventListener("click", () => { resetRecord(); $("recordDialog").showModal(); });
+  $("openRecord").addEventListener("click", () => { if (!needAccess()) return; resetRecord(); $("recordDialog").showModal(); });
   async function readRecord(getText) {
     recordStatus('<span class="spinner"></span>Reading the record…');
     let text = "";

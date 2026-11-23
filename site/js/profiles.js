@@ -158,10 +158,11 @@
     initials: p => (p.kind === "self" && (!p.name || p.name === "Me")) ? "ME" : (p.name || "?").trim().split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase(),
     displayName: p => (p.kind === "self" && (!p.name || p.name === "Me") ? "You" : p.name),
     // backup
-    exportData: () => JSON.stringify({ app: "HealthyScan", version: 1, exported: new Date().toISOString(), profiles }, null, 2),
+    exportData: () => JSON.stringify({ app: "HealthyScan", version: 1, exported: new Date().toISOString(), profiles, meta: window.HM_PAY ? window.HM_PAY.exportMeta() : undefined }, null, 2),
     importData(text) {
       const j = JSON.parse(text);
       if (!j || j.app !== "HealthyScan" || !Array.isArray(j.profiles) || !j.profiles.length) throw new Error("not a backup");
+      try { if (window.HM_PAY && j.meta) window.HM_PAY.importMeta(j.meta); } catch {}
       const clean = j.profiles.filter(p => p && typeof p.id === "string").map(p => ({
         id: p.id, name: String(p.name || "").slice(0, 30), kind: ["self", "adult", "child"].includes(p.kind) ? p.kind : "adult",
         birth: typeof p.birth === "string" ? p.birth.slice(0, 7) : undefined, color: COLORS.includes(p.color) ? p.color : COLORS[0],
