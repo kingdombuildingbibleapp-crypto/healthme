@@ -16,3 +16,5 @@
   Content-Type: application/octet-stream
 /vendor/zxing/*.wasm
   Content-Type: application/wasm
+/media/*
+  Cache-Control: public, max-age=604800

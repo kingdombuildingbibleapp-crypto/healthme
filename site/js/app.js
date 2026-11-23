@@ -581,7 +581,7 @@
   document.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => b.closest("dialog").close()));
 
   // ---------- lookup ----------
-  const FIELDS = "code,product_name,product_name_en,generic_name,brands,quantity,image_front_small_url,image_front_url,image_url,ingredients_text,ingredients_text_en,ingredients_tags,allergens_tags,traces_tags,additives_tags,labels_tags,categories,categories_tags,nutriments,nova_group,nutriscore_grade,nutrition_grades";
+  const FIELDS = "code,product_name,product_name_en,generic_name,brands,quantity,image_front_small_url,image_front_url,image_url,ingredients_text,ingredients_text_en,ingredients_tags,allergens_tags,traces_tags,additives_tags,labels_tags,categories,categories_tags,nutriments,nova_group,nutriscore_grade,nutrition_grades,lang,countries_tags";
   const SOURCES = [
     ["food", "https://world.openfoodfacts.org", "Open Food Facts"],
     ["beauty", "https://world.openbeautyfacts.org", "Open Beauty Facts"],
@@ -747,6 +747,14 @@
     return (p.name || "").toLowerCase().replace(/[^a-z\s]/g, " ").split(/\s+/)
       .filter(w => w.length > 2 && !STOP.has(w) && !brand.includes(w)).slice(-3).join(" ");
   }
+  // Shoppers here are in the US: skip products sold only in non-English markets ("Pois chiches…")
+  const EN_MARKETS = /en:(united-states|canada|united-kingdom|australia|new-zealand|ireland)/;
+  function englishMarket(prod) {
+    const c = (prod.countries_tags || []).join(" ");
+    if (EN_MARKETS.test(c)) return true;
+    if (!c && (prod.lang === "en" || prod.product_name_en)) return true;
+    return false;
+  }
   async function findSuggestions(p, code, conds) {
     const [srcKey, base] = baseFor(p);
     const urls = [];
@@ -768,6 +776,7 @@
       let j; try { j = await fetchJSON(u, 15000); } catch { failed++; continue; }
       for (const prod of j.products || []) {
         if (!prod || !prod.code || !(prod.product_name || prod.product_name_en)) continue;
+        if (!englishMarket(prod)) continue;
         const cp = normalizeOFF(prod, srcKey);
         const key = (cp.name + "|" + cp.brand).toLowerCase();
         if (!cp.hasData || seen.has(prod.code) || seen.has(key)) continue;
@@ -872,7 +881,7 @@
     let j;
     try { j = await fetchJSON(url, 15000); }
     catch { await new Promise(r => setTimeout(r, 2500)); j = await fetchJSON(url, 15000); }   // the databases are sometimes busy: one retry
-    const list = (j.products || []).filter(x => x && x.code && (x.product_name || x.product_name_en));
+    const list = (j.products || []).filter(x => x && x.code && (x.product_name || x.product_name_en) && (db !== "food" || englishMarket(x)));
     recMem.set(k, list);
     try { localStorage.setItem("hm:rec:" + k, JSON.stringify({ t: Date.now(), p: list })); } catch {}
     return list;
@@ -1094,7 +1103,7 @@
     }
     if (r.condition.fallback) html += `<li class="reason v-medium"><span class="dot">${ICON.warn}</span><span><b>General rating</b><span class="found">${esc(possessive(pr))} profile has no conditions yet. <button class="link" id="addCondsFromResult">Add conditions</button> for a personal rating.</span></span></li>`;
     if (r.condition.generic) html += `<li class="reason v-medium"><span class="dot">${ICON.warn}</span><span><b>General rating</b><span class="found">"${esc(r.condition.name)}" isn't in our library yet, so this uses general health guidelines.</span></span></li>`;
-    if (!p.hasData && (p.kind === "food" || p.kind === "cosmetic")) {
+    if (!p.hasData && (p.kind === "food" || p.kind === "cosmetic" || p.kind === "household")) {
       html += `<li class="reason v-medium"><span class="dot">${ICON.warn}</span><span><b>Limited data</b><span class="found">This product has no ingredient list in the database, so the score is capped. <button class="link" id="addIng">Add ingredients</button></span></span></li>`;
     }
     $("rReasons").innerHTML = html;

@@ -305,7 +305,9 @@ function scoreForCondition(p, cond) {
     });
   }
   score = Math.max(2, Math.min(98, Math.min(score, cap)));
+  // No ingredient list: we can't call it good. Household chemicals (paint, cleaners) get a lower cap.
   if (!p.hasData && (p.kind === "food" || p.kind === "cosmetic")) score = Math.min(score, 62);
+  if (!p.hasData && p.kind === "household") score = Math.min(score, 50);
   score = Math.round(score);
   reasons.sort((a, b) => (Math.abs(b.impact || 0) - Math.abs(a.impact || 0)) || (b.weight - a.weight));
   return { condition: cond, score, verdict: verdict(score), reasons, checked };

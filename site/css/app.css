@@ -658,3 +658,10 @@ dialog.sheet > .btn.wide { display: flex; width: calc(100% - 40px); }
 .pay-restore { margin: 10px 0; } .pay-restore summary { cursor: pointer; font-weight: 700; color: var(--accent); }
 .install-steps { margin: 10px 0 12px; padding-left: 22px; display: grid; gap: 10px; font-size: 1rem; }
 .share-ic { display: inline-block; padding: 0 6px; border-radius: 6px; background: rgba(61,123,255,.12); color: #1F4FD1; }
+
+/* ---------- ad video ---------- */
+.ad-video { display: grid; gap: 12px; justify-items: center; }
+.ad-video .section-title { justify-self: start; }
+.ad-video video { width: min(100%, 340px); height: auto; aspect-ratio: 9 / 16; border-radius: 26px; background: #0B1F6E; box-shadow: 0 20px 40px -18px rgba(11,31,110,.7); }
+.ad-video .btn { max-width: 340px; display: flex; justify-content: center; gap: 8px; }
+.ad-video .btn svg { width: 20px; height: 20px; }
