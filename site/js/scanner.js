@@ -100,8 +100,10 @@
       const res = await native.detect(video);
       return res.map(b => clean(b.rawValue, b.format)).filter(Boolean);
     }
-    const { x, y, w, h } = region();
-    return readZX(grab(video, x, y, w, h, 1280), false);
+    // Alternate between the strip behind the on-screen frame and the whole picture: barcodes on
+    // bottles and cans often run vertically and don't fit inside a wide, short strip.
+    if (n % 2) { const { x, y, w, h } = region(); return readZX(grab(video, x, y, w, h, 1280), false); }
+    return readZX(grab(video, 0, 0, video.videoWidth, video.videoHeight, 1280), false);
   }
   function accept(hits) {
     for (const h of hits) {
