@@ -115,6 +115,7 @@
   const api = {
     codeLooksValid,
     signedIn: () => !!acct,
+    created: () => (acct ? acct.created || null : null),
     state: () => ({ signedIn: !!acct, email: acct?.email || "", at: acct?.at || null, error: lastError, syncing: !!pushing }),
     onChange: f => { listeners.add(f); return () => listeners.delete(f); },
 
@@ -125,7 +126,7 @@
       const pf = await pwFields(password, dk), rf = await recFields(dk);
       const vault = await encryptText(P().exportData(), dk);
       const r = await call({ action: "signup", id, ...pf, ...rf.fields, vault });
-      acct = { email, id, token: r.token, key: dk, rev: r.rev, at: r.rev }; write(acct); lastError = ""; emit();
+      acct = { email, id, token: r.token, key: dk, rev: r.rev, at: r.rev, created: r.created || Date.now() }; write(acct); lastError = ""; emit();
       return { code: rf.code };
     },
 
@@ -138,7 +139,7 @@
       const r = await call({ action: "login", id, authKey: d.auth });
       // accounts from the first version encrypted with the password key directly
       const dk = r.wrapPw ? await unwrap(r.wrapPw, d.kek) : d.kek;
-      acct = { email, id, token: r.token, key: dk, rev: r.vault?.rev || 0, at: r.vault?.at || null }; write(acct); lastError = "";
+      acct = { email, id, token: r.token, key: dk, rev: r.vault?.rev || 0, at: r.vault?.at || null, created: r.created || null }; write(acct); lastError = "";
       let code = null;
       if (!r.hasRecovery || !r.wrapPw) {
         try {
@@ -164,7 +165,7 @@
       try { dk = await unwrap(r1.wrapRec, d.kek); } catch { throw new Error("That recovery code didn't unlock the account."); }
       const pf = await pwFields(newPassword, dk), rf = await recFields(dk);
       const r2 = await call({ action: "reset", id, token: r1.resetToken, ...pf, ...rf.fields });
-      acct = { email, id, token: r2.token, key: dk, rev: r2.vault?.rev || 0, at: r2.vault?.at || null }; write(acct); lastError = ""; emit();
+      acct = { email, id, token: r2.token, key: dk, rev: r2.vault?.rev || 0, at: r2.vault?.at || null, created: r2.created || null }; write(acct); lastError = ""; emit();
       return { ...(await settle(r2.vault, dk)), code: rf.code };
     },
 
@@ -189,6 +190,7 @@
       if (unsent) { await push().catch(() => {}); return false; }
       try {
         const r = await call({ action: "load", id: acct.id, token: acct.token, sinceRev: acct.rev });
+        if (r.created && r.created !== acct.created) { acct.created = r.created; write(acct); emit(); }
         if (r.unchanged || !r.vault) return false;
         applyVault(await decryptText(r.vault, acct.key));
         acct.rev = r.vault.rev; acct.at = r.vault.at; write(acct); emit();

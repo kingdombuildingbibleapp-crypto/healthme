@@ -1,5 +1,5 @@
 /* HealthyScan trial + lifetime unlock.
-   3-day free trial from first use, then a one-time $9.99 purchase (Stripe Payment Link) unlocks
+   3-day free trial from account sign-up, then a one-time $9.99 purchase (Stripe Payment Link) unlocks
    every feature for life. The trial start and the license are saved on the phone, in the backup
    file and in the encrypted account copy, so they follow the person to a new phone. */
 (() => {
@@ -16,11 +16,11 @@
   const set = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} };
   const cookie = (k, v) => { try { if (v === undefined) return (document.cookie.match(new RegExp("(?:^|; )" + k + "=([^;]*)")) || [])[1] || null; document.cookie = `${k}=${v}; max-age=${5 * 365 * 864e2}; path=/; samesite=lax; secure`; } catch { return null; } };
 
-  // trial clock: earliest start we know of (localStorage, cookie)
-  let start = Math.min(...[get(K_START), cookie("hs_ts")].map(Number).filter(n => n > 0), Date.now());
-  set(K_START, String(start)); cookie("hs_ts", String(start));
+  // The trial starts when the person creates their free account (the server records that time).
+  // Accounts made before payments went live get 3 days from launch.
   let license = get(K_LIC) || null;
-  const trialFrom = () => Math.max(start, LAUNCH);
+  const acctCreated = () => { const A = window.HM_ACCOUNT; return A && A.signedIn() ? (A.created() || Date.now()) : null; };
+  const trialFrom = () => { const c = acctCreated(); return c ? Math.max(c, LAUNCH) : null; };
   const live = () => !!PAYMENT_LINK;          // no checkout yet: nothing is locked
 
   const listeners = new Set();
@@ -37,10 +37,11 @@
     PRICE, TRIAL_DAYS,
     hasCheckout: () => !!PAYMENT_LINK,
     state() {
-      const ends = trialFrom() + TRIAL_DAYS * 864e5, left = ends - Date.now();
-      return { live: live(), licensed: !!license, trialEndsAt: ends, msLeft: Math.max(0, left), daysLeft: Math.max(0, Math.ceil(left / 864e5)), expired: live() && left <= 0 && !license };
+      const from = trialFrom(), ends = from ? from + TRIAL_DAYS * 864e5 : null, left = ends ? ends - Date.now() : 0;
+      const needsSignup = live() && !license && !from;
+      return { live: live(), licensed: !!license, needsSignup, trialEndsAt: ends, msLeft: Math.max(0, left), daysLeft: Math.max(0, Math.ceil(left / 864e5)), expired: live() && !license && !!from && left <= 0 };
     },
-    canUse: () => !live() || !!license || Date.now() < trialFrom() + TRIAL_DAYS * 864e5,
+    canUse: () => { if (!live() || license) return true; const f = trialFrom(); return !!f && Date.now() < f + TRIAL_DAYS * 864e5; },
     onChange: f => { listeners.add(f); return () => listeners.delete(f); },
     checkoutUrl(email) {
       if (!PAYMENT_LINK) return "";
@@ -58,10 +59,10 @@
     },
     async restore(email) { const r = await call({ action: "restore", email }); setLicense(r.license); return true; },
     // carried in backups and the encrypted account copy
-    exportMeta: () => ({ trialStart: start, license }),
+    exportMeta: () => ({ license }),
+    refresh: () => emit(),
     importMeta(m) {
       if (!m) return;
-      if (Number(m.trialStart) > 0 && Number(m.trialStart) < start) { start = Number(m.trialStart); set(K_START, String(start)); cookie("hs_ts", String(start)); }
       if (typeof m.license === "string" && /^lic\.cs_(test|live)_[A-Za-z0-9]+\.\d+\.[a-f0-9]{64}$/.test(m.license) && !license) { license = m.license; set(K_LIC, license); }
       emit();
     },

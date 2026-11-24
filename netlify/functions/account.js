@@ -94,7 +94,7 @@ exports.handler = async (event) => {
       await users.setJSON(b.id, u);
       const rev = Date.now();
       if (b.vault && b64ok(b.vault.ct, MAX_VAULT) && b64ok(b.vault.iv, 40)) await vaults.setJSON(b.id, { ct: b.vault.ct, iv: b.vault.iv, rev, at: rev });
-      return json(200, { token: signSession(b.id, 0), rev });
+      return json(200, { token: signSession(b.id, 0), rev, created: u.created });
     }
 
     if (action === "salt") {
@@ -114,7 +114,7 @@ exports.handler = async (event) => {
       if (!safeEq(await scrypt(b.authKey, u.pwSalt), u.pwHash)) { await fail(u); return bad; }
       if (u.fails || u.lockUntil) { u.fails = 0; delete u.lockUntil; await users.setJSON(b.id, u); }
       const v = await vaults.get(b.id, { type: "json" });
-      return json(200, { token: signSession(b.id, u.epoch || 0), vault: v || null, wrapPw: u.wrapPw || null, hasRecovery: !!u.recHash });
+      return json(200, { token: signSession(b.id, u.epoch || 0), vault: v || null, wrapPw: u.wrapPw || null, hasRecovery: !!u.recHash, created: u.created || null });
     }
 
     if (action === "recover") {
@@ -138,7 +138,7 @@ exports.handler = async (event) => {
       u.epoch = (u.epoch || 0) + 1;
       await users.setJSON(b.id, u);
       const v = await vaults.get(b.id, { type: "json" });
-      return json(200, { token: signSession(b.id, u.epoch), vault: v || null });
+      return json(200, { token: signSession(b.id, u.epoch), vault: v || null, created: u.created || null });
     }
 
     if (action === "changepw" || action === "setrecovery") {
@@ -154,10 +154,12 @@ exports.handler = async (event) => {
     }
 
     if (action === "load") {
-      if (!(await verify("s"))) return json(401, { error: "Please sign in again." });
+      const ok = await verify("s");
+      if (!ok) return json(401, { error: "Please sign in again." });
+      const created = ok.u ? ok.u.created || null : null;
       const v = await vaults.get(b.id, { type: "json" });
-      if (b.sinceRev && v && v.rev === b.sinceRev) return json(200, { unchanged: true, rev: v.rev });
-      return json(200, { vault: v || null });
+      if (b.sinceRev && v && v.rev === b.sinceRev) return json(200, { unchanged: true, rev: v.rev, created });
+      return json(200, { vault: v || null, created });
     }
 
     if (action === "save") {

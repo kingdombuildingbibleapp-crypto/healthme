@@ -241,7 +241,7 @@
     $("saveBtn").classList.add("just-saved"); setTimeout(() => $("saveBtn").classList.remove("just-saved"), 1600);
   }
   $("saveBtn").addEventListener("click", doSave);
-  $("saveAcctBtn").addEventListener("click", () => { $("saveDialog").close(); openAccount(); });
+  $("saveAcctBtn").addEventListener("click", () => { $("saveDialog").close(); openAccount(false); });
 
   // ---------- Account ----------
   const A = window.HM_ACCOUNT;
@@ -299,14 +299,17 @@
     $("saveBtn").classList.toggle("cloud", st.signedIn);
   }
   A.onChange(renderAccount);
-  function openAccount() {
+  A.onChange(() => { PAY.refresh(); renderPlan(); });
+  function openAccount(forTrial) {
+    $("acctTrial").hidden = !forTrial || A.signedIn();
+    if (forTrial && !A.signedIn()) { document.querySelector('input[name="acctMode"][value="signup"]').checked = true; }
     deleteAcctArmed = false; $("acctDelete").textContent = "Delete my account"; $("acctStatus").textContent = "";
     recovering = false; $("acctCode").value = ""; $("changePwForm").hidden = true;
     $("acctErr").hidden = true; $("acctPw").value = ""; $("acctPw2").value = "";
     syncAcctMode(); renderAccount();
     if (!$("accountDialog").open) $("accountDialog").showModal();
   }
-  $("menuAccount").addEventListener("click", () => { $("menuDialog").close(); openAccount(); });
+  $("menuAccount").addEventListener("click", () => { $("menuDialog").close(); openAccount(false); });
   $("acctForm").addEventListener("submit", async e => {
     e.preventDefault();
     const email = $("acctEmail").value.trim(), pw = $("acctPw").value, mode = acctMode(), up = mode === "signup", rec = mode === "recover";
@@ -326,7 +329,7 @@
       if (up) {
         const r = await A.signup(email, pw);
         renderAccount();
-        showCode(r.code, null, () => toast("Account created. Your profiles are saved to it.", 4000));
+        showCode(r.code, null, () => { $("accountDialog").close(); toast(PAY.state().live && !PAY.state().licensed ? "Account created. Your 3-day free trial has started! 🎉" : "Account created. Your profiles are saved to it.", 5000); });
       } else if (rec) {
         const r = await A.recover(email, $("acctCode").value, pw);
         recovering = false;
@@ -457,18 +460,20 @@
   // features that need the trial or a license
   function needAccess() {
     if (PAY.canUse()) return true;
-    openPaywall();
+    if (PAY.state().needsSignup) openAccount(true);
+    else openPaywall();
     return false;
   }
   function renderPlan() {
     const st = PAY.state(), pill = $("planPill");
     pill.hidden = !st.live && !st.licensed;
     pill.className = "plan-pill " + (st.licensed ? "ok" : st.expired ? "over" : "trial");
-    pill.innerHTML = st.licensed ? "✓ Lifetime unlocked"
+    pill.innerHTML = st.needsSignup ? `<b>Sign up free</b> · start your 3-day trial`
+      : st.licensed ? "✓ Lifetime unlocked"
       : st.expired ? `Trial ended · <b>Unlock for ${PAY.PRICE}</b>`
       : `Free trial: ${st.daysLeft} day${st.daysLeft === 1 ? "" : "s"} left · <b>Unlock for ${PAY.PRICE}</b>`;
   }
-  $("planPill").addEventListener("click", () => { if (!PAY.state().licensed) openPaywall(); });
+  $("planPill").addEventListener("click", () => { const st = PAY.state(); if (st.needsSignup) openAccount(true); else if (!st.licensed) openPaywall(); });
   PAY.onChange(renderPlan); renderPlan(); setInterval(renderPlan, 60e3);
   // back from Stripe checkout: ?paid={CHECKOUT_SESSION_ID}
   (async () => {
