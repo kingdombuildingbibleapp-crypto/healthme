@@ -618,7 +618,8 @@
     ["products", "https://world.openproductsfacts.org", "Open Products Facts"],
   ];
   const SOURCE_NAME = Object.fromEntries(SOURCES.map(s => [s[0], s[2]]));
-  SOURCE_NAME.upc = "UPCitemdb"; SOURCE_NAME.manual = "your label"; SOURCE_NAME.example = "example data";
+  SOURCE_NAME.upc = "UPCitemdb"; SOURCE_NAME.community = "the HealthyScan community"; SOURCE_NAME.usda = "USDA FoodData Central";
+  SOURCE_NAME.openfda = "FDA drug labels"; SOURCE_NAME.dsld = "NIH Supplement Label Database"; SOURCE_NAME.manual = "your label"; SOURCE_NAME.example = "example data";
   function variants(code) {
     const v = new Set([code]);
     if (code.length === 14 && code.startsWith("0")) code = code.slice(1), v.add(code);
@@ -641,6 +642,11 @@
       }));
     }
     try { return await Promise.any(tries); } catch {}
+    // HealthyScan community, USDA Branded Foods, FDA drug labels, NIH supplements
+    try {
+      const j = await fetchJSON(`/api/products?code=${encodeURIComponent(code)}`, 20000);
+      if (j && j.title) return { source: j.source || "products", generic: j };
+    } catch {}
     try {
       const j = await fetchJSON(`/api/upc?code=${encodeURIComponent(code)}`, 10000);
       if (j && j.title) return { source: "upc", generic: j };
@@ -739,6 +745,12 @@
     p.kind = kindSel;
     $("manualDialog").close();
     showResult(p, manualCode, "manual");
+    // share it so the next person who scans this barcode gets it instantly (product info only)
+    if (manualCode && /^\d{6,14}$/.test(manualCode) && $("mShare").checked) {
+      fetch("/api/products", { method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "contribute", code: manualCode, name: $("mName").value.trim(), kind: kindSel, ingredients: $("mIng").value.trim() }) })
+        .then(r => { if (r.ok) toast("Thanks! You added this product to HealthyScan for everyone. 🙌", 4000); }).catch(() => {});
+    }
   });
 
   // ---------- results ----------
@@ -753,7 +765,9 @@
     $("rThumb").innerHTML = p.image ? `<img src="${esc(p.image)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ICON.pkg;
     const ing = p.ingredientsRaw;
     $("rIngWrap").hidden = !ing; $("rIng").textContent = ing || "";
-    const lic = source === "upc" ? 'Product name from <a href="https://www.upcitemdb.com" target="_blank" rel="noopener">UPCitemdb</a>.'
+    const LIC2 = { usda: "Product data from USDA FoodData Central (public domain).", openfda: "Product data from FDA drug labels via openFDA (public domain).",
+      dsld: "Product data from the NIH Dietary Supplement Label Database.", community: "Added by a HealthyScan user. Double-check the label." };
+    const lic = LIC2[source] ? LIC2[source] : source === "upc" ? 'Product name from <a href="https://www.upcitemdb.com" target="_blank" rel="noopener">UPCitemdb</a>.'
       : SOURCES.some(s => s[0] === source) ? `Product data from <a href="${SOURCES.find(s => s[0] === source)[1]}/product/${esc(code)}" target="_blank" rel="noopener">${SOURCE_NAME[source]}</a> (ODbL), maintained by volunteers. Labels change, so double-check the package.`
       : opts.example ? "This is a made-up example to show how ratings work." : "Rated from the details you entered.";
     $("rData").innerHTML = (p.note ? esc(p.note) + " " : "") + lic + " Not medical advice.";

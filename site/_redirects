@@ -2,3 +2,4 @@
 /api/account  /.netlify/functions/account  200
 /api/license  /.netlify/functions/license  200
 /api/stripe-webhook  /.netlify/functions/stripe-webhook  200
+/api/products  /.netlify/functions/products  200

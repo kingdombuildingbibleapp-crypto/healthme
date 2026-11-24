@@ -372,7 +372,7 @@ function normalizeOFF(prod, source) {
   return p;
 }
 
-function normalizeGeneric({ title, brand, category, description, image, ingredients }) {
+function normalizeGeneric({ title, brand, category, description, image, ingredients, kind: givenKind, nutriments, isDrink, quantity, source }) {
   const cat = (category || "").toLowerCase();
   const all = ((title || "") + " " + cat + " " + (description || "")).toLowerCase();
   let kind = "other";
@@ -387,8 +387,14 @@ function normalizeGeneric({ title, brand, category, description, image, ingredie
     additiveCount: 0, labels: [], nutriments: {}, nova: null, nutriscore: null, isDrink: /drink|beverage|soda|juice/.test(all),
     category: category || "",
   };
-  p.hasData = !!ing;
-  if (!ing && kind !== "other") p.ingredients = all; // fall back to title/description keywords
+  if (["food", "cosmetic", "household", "other"].includes(givenKind)) p.kind = givenKind;
+  if (source) p.source = source;
+  if (quantity) p.quantity = String(quantity);
+  if (typeof isDrink === "boolean") p.isDrink = isDrink;
+  const hasNutr = nutriments && Object.keys(nutriments).length > 0;
+  if (hasNutr) p.nutriments = nutriments;
+  p.hasData = !!ing || !!hasNutr;
+  if (!ing && p.kind !== "other") p.ingredients = all; // fall back to title/description keywords
   return p;
 }
 

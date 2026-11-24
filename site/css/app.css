@@ -684,3 +684,5 @@ dialog.sheet > .explain-btn { width: calc(100% - 40px); }
 .ehr-org { display: grid; gap: 2px; padding: 12px 14px; border-radius: 14px; border: 1.5px solid var(--line, rgba(0,0,0,.08)); background: var(--glass-strong, #fff); text-align: left; font: inherit; color: var(--ink); cursor: pointer; }
 .ehr-org small { color: var(--ink-2); font-size: .8rem; }
 .ehr-test { margin-top: 10px; } .ehr-test summary { cursor: pointer; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+.share-check { display: flex; gap: 10px; align-items: flex-start; margin: 12px 0 4px; font-size: .86rem; color: var(--ink-2); line-height: 1.4; }
+.share-check input { flex: none; width: 20px; height: 20px; margin-top: 1px; accent-color: var(--accent); }
