@@ -4,7 +4,9 @@
 // Only product information is stored. Nothing about the person or their health.
 const { connectLambda, getStore } = require("@netlify/blobs");
 
-const USDA_KEY = process.env.USDA_API_KEY || "DEMO_KEY";
+// one free api.data.gov key works for both USDA FoodData Central and openFDA
+const USDA_KEY = process.env.USDA_API_KEY || process.env.DATA_GOV_API_KEY || "DEMO_KEY";
+const FDA_KEY = USDA_KEY === "DEMO_KEY" ? "" : `&api_key=${USDA_KEY}`;
 const json = (status, body, cache = "no-store") => ({
   statusCode: status,
   headers: { "content-type": "application/json", "cache-control": cache },
@@ -42,7 +44,7 @@ async function openfda(code) {
   const tries = [digits(code), digits(code).padStart(12, "0"), digits(code).replace(/^0+/, "").padStart(13, "0")];
   const q = [...new Set(tries)].map(c => `openfda.upc:%22${c}%22`).join("+OR+");
   {
-    const j = await getJSON(`https://api.fda.gov/drug/label.json?search=${q}&limit=1`);
+    const j = await getJSON(`https://api.fda.gov/drug/label.json?search=${q}&limit=1${FDA_KEY}`);
     const r = j && j.results && j.results[0];
     if (!r) return null;
     const o = r.openfda || {};
