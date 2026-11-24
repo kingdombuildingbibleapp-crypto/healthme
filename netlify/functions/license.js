@@ -29,6 +29,7 @@ exports.handler = async (event) => {
       if (typeof b.session !== "string" || !/^cs_(test|live)_[A-Za-z0-9]{10,200}$/.test(b.session)) return json(400, { error: "Missing purchase details." });
       const rec = await purchases.get("session:" + b.session, { type: "json" });
       if (!rec) return json(404, { pending: true, error: "We haven't received confirmation from Stripe yet." });
+      if (rec.refunded) return json(410, { refunded: true, error: "This purchase was refunded." });
       return json(200, { license: makeLicense(rec.session), at: rec.at });
     }
     if (b.action === "restore") {
@@ -36,9 +37,20 @@ exports.handler = async (event) => {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json(400, { error: "Enter the email you used at checkout." });
       const rec = await purchases.get("email:" + sha256("healthyscan:" + email), { type: "json" });
       if (!rec || !rec.sessions || !rec.sessions.length) return json(404, { error: "No purchase found for that email. Use the email from your Stripe receipt." });
-      return json(200, { license: makeLicense(rec.sessions[0]) });
+      for (const sid of rec.sessions) {
+        const r = await purchases.get("session:" + sid, { type: "json" });
+        if (r && !r.refunded) return json(200, { license: makeLicense(sid), at: r.at });
+      }
+      return json(410, { refunded: true, error: "That purchase was refunded. Buy again to unlock HealthyScan." });
     }
-    if (b.action === "check") return json(200, { valid: checkLicense(b.license) });
+    if (b.action === "check") {
+      // signature + not refunded; returns the purchase date for the "Your purchase" panel
+      if (!checkLicense(b.license)) return json(200, { valid: false });
+      const sid = String(b.license).split(".")[1];
+      const rec = await purchases.get("session:" + sid, { type: "json" });
+      if (rec && rec.refunded) return json(200, { valid: false, refunded: true });
+      return json(200, { valid: true, at: rec ? rec.at : null });
+    }
     return json(400, { error: "Unknown action" });
   } catch (e) {
     return json(500, { error: "Something went wrong. Try again in a minute." });

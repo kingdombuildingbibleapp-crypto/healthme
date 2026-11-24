@@ -27,15 +27,26 @@ exports.handler = async (event) => {
   if (!verify(raw, sig, secret)) return json(400, { error: "Bad signature" });
 
   let evt; try { evt = JSON.parse(raw); } catch { return json(400, { error: "Bad JSON" }); }
+  connectLambda(event);
+  const purchases = getStore({ name: "hs-purchases" });
+
+  // Refund issued in Stripe: mark the purchase refunded so the lifetime unlock is removed
+  if (evt.type === "charge.refunded") {
+    const ch = evt.data && evt.data.object;
+    if (!ch || !ch.payment_intent || !ch.refunded) return json(200, { ignored: "partial refund" });
+    const map = await purchases.get("pi:" + ch.payment_intent, { type: "json" });
+    if (!map) return json(200, { ignored: "unknown payment" });
+    const rec = await purchases.get("session:" + map.session, { type: "json" });
+    if (rec) { rec.refunded = Date.now(); await purchases.setJSON("session:" + map.session, rec); }
+    return json(200, { ok: true, refunded: map.session });
+  }
   if (evt.type !== "checkout.session.completed" && evt.type !== "checkout.session.async_payment_succeeded") return json(200, { ignored: evt.type });
   const s = evt.data && evt.data.object;
   if (!s || s.payment_status !== "paid" || (s.amount_total || 0) < MIN_AMOUNT) return json(200, { ignored: "not paid" });
-
-  connectLambda(event);
-  const purchases = getStore({ name: "hs-purchases" });
   const email = String((s.customer_details && s.customer_details.email) || s.customer_email || "").trim().toLowerCase();
   const rec = { session: s.id, at: Date.now(), amount: s.amount_total, currency: s.currency, ref: s.client_reference_id || null, emailHash: email ? sha256("healthyscan:" + email) : null };
   await purchases.setJSON("session:" + s.id, rec);
+  if (s.payment_intent) await purchases.setJSON("pi:" + s.payment_intent, { session: s.id });
   if (rec.emailHash) {
     const cur = (await purchases.get("email:" + rec.emailHash, { type: "json" })) || { sessions: [] };
     if (!cur.sessions.includes(s.id)) cur.sessions.push(s.id);

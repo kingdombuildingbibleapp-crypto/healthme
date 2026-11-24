@@ -484,6 +484,30 @@
     try { await PAY.claim(sid); $("toast").hidden = true; toast("Thank you! HealthyScan is unlocked for life, including every future feature. 🎉", 6000); }
     catch (e) { $("toast").hidden = true; openPaywall(e.message); }
   })();
+  // ---------- Your purchase / refunds ----------
+  const SUPPORT = "support@healthyscan.net";
+  function openPurchase() {
+    const pu = PAY.purchase();
+    $("purchaseOn").hidden = !pu; $("purchaseOff").hidden = !!pu;
+    if (pu) {
+      const when = pu.at ? new Date(pu.at).toLocaleDateString([], { month: "long", day: "numeric", year: "numeric" }) : "";
+      $("purchaseMeta").textContent = [when && `Purchased ${when}`, `Order ${pu.order}`, pu.test && "(test)"].filter(Boolean).join(" · ");
+      const within = !pu.at || Date.now() - pu.at <= 14 * 864e5;
+      const subject = `Refund request: HealthyScan order ${pu.order}`;
+      const body = `Hi HealthyScan,\n\nPlease refund my HealthyScan Lifetime purchase.\n\nOrder: ${pu.order}\nPurchased: ${when || "unknown"}\nEmail used at checkout: \n\nReason (optional): \n\nThanks!`;
+      $("refundBtn").href = `mailto:${SUPPORT}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      $("refundBtn").textContent = within ? "Request a refund" : "Contact support";
+      PAY.verify().then(() => { if (!PAY.purchase()) openPurchase(); });
+    } else {
+      $("purchaseOffText").textContent = PAY.wasRevoked() ? "Your purchase was refunded, so lifetime access has ended on this phone." : "You haven't unlocked HealthyScan Lifetime on this phone yet.";
+    }
+    if (!$("purchaseDialog").open) $("purchaseDialog").showModal();
+  }
+  $("menuPurchase").addEventListener("click", () => { $("menuDialog").close(); openPurchase(); });
+  $("purchaseBuy").addEventListener("click", () => { $("purchaseDialog").close(); openPaywall(); });
+  $("planPill").addEventListener("click", () => { if (PAY.state().licensed) openPurchase(); });
+  PAY.onChange(() => { if (PAY.wasRevoked() && !PAY.state().licensed) toast("Your HealthyScan purchase was refunded, so lifetime access has ended.", 6000); });
+
   // "Download the app" (install as a home-screen app)
   let installEvt = null;
   const standalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;

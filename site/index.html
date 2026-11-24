@@ -276,7 +276,28 @@
       <button class="btn wide" type="submit">Restore</button>
     </form>
   </details>
-  <p class="fineprint">Secure checkout by Stripe. Cards, Apple Pay and Google Pay. HealthyScan never sees your card details.</p>
+  <p class="fineprint">Secure checkout by Stripe. Cards, Apple Pay and Google Pay. 14-day money-back guarantee. HealthyScan never sees your card details.</p>
+</dialog>
+
+<!-- ============ YOUR PURCHASE ============ -->
+<dialog class="sheet" id="purchaseDialog" aria-labelledby="purchaseTitle">
+  <div class="sheet-head"><h2 id="purchaseTitle">Your purchase</h2><button class="btn small ghost" data-close>Done</button></div>
+  <div id="purchaseOn">
+    <div class="save-hero"><span class="save-check" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <div><b>HealthyScan Lifetime</b><small id="purchaseMeta"></small></div></div>
+    <ul class="pay-list compact"><li>Every feature, forever</li><li>Every future feature included</li><li>No subscription, nothing else to pay</li></ul>
+    <h3 class="section-title small-title">Receipt</h3>
+    <p class="picker-hint">Stripe emailed your receipt to the address you used at checkout. Search your email for "HealthyScan" or "Stripe". Use that email with <b>Restore purchase</b> to unlock HealthyScan on a new phone.</p>
+    <h3 class="section-title small-title">Refunds</h3>
+    <p class="picker-hint">Not happy? You can get a full refund within <b>14 days</b> of purchase, no questions asked. Tap below and we'll handle it within 2 business days. After a refund, lifetime access ends on all your devices.</p>
+    <a class="btn wide" id="refundBtn" href="#">Request a refund</a>
+  </div>
+  <div id="purchaseOff" hidden>
+    <p class="picker-hint" id="purchaseOffText">You haven't unlocked HealthyScan Lifetime on this phone yet.</p>
+    <button class="btn primary wide" id="purchaseBuy">Unlock for $9.99</button>
+    <p class="picker-hint">Already paid? Tap <b>Unlock</b>, then <b>Restore purchase</b> with the email from your receipt.</p>
+  </div>
+  <p class="fineprint">Payments are processed securely by Stripe. HealthyScan never sees your card details. Questions: <a href="mailto:support@healthyscan.net">support@healthyscan.net</a></p>
 </dialog>
 
 <!-- ============ INSTALL (iPhone) ============ -->
@@ -412,6 +433,7 @@
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
     Add a family member</button>
   <button class="btn wide" id="menuAccount">Account: sign up or sign in</button>
+  <button class="btn wide" id="menuPurchase">Your purchase</button>
   <h3 class="section-title small-title">Backup</h3>
   <p class="picker-hint">Profiles live only on this phone. Save a backup file to move them to a new phone or keep them safe.</p>
   <div class="two-col">

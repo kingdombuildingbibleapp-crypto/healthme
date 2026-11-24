@@ -31,7 +31,26 @@
     if (!r.ok) { const e = new Error(j.error || "Couldn't reach HealthyScan. Check your connection."); e.status = r.status; e.pending = j.pending; throw e; }
     return j;
   }
-  function setLicense(l) { license = l; set(K_LIC, l); emit(); try { window.dispatchEvent(new Event("hm:saved")); } catch {} }
+  function setLicense(l, at) {
+    license = l; set(K_LIC, l);
+    if (at) set("hm:purchasedAt", String(at));
+    if (!l) set("hm:purchasedAt", null);
+    emit(); try { window.dispatchEvent(new Event("hm:saved")); } catch {}
+  }
+  // Once a day, make sure the purchase wasn't refunded (and learn its date)
+  async function verifyLicense(force) {
+    if (!license) return;
+    const last = Number(get("hm:licCheck") || 0);
+    if (!force && Date.now() - last < 864e5) return;
+    try {
+      const r = await call({ action: "check", license });
+      set("hm:licCheck", String(Date.now()));
+      if (r.refunded) { setLicense(null); revoked = true; emit(); }
+      else if (r.valid && r.at) { set("hm:purchasedAt", String(r.at)); emit(); }
+    } catch {}
+  }
+  let revoked = false;
+  setTimeout(() => verifyLicense(false), 4000);
 
   const api = {
     PRICE, TRIAL_DAYS,
@@ -52,12 +71,20 @@
     // after Stripe redirects back: wait for Stripe's confirmation to reach us, then unlock
     async claim(session, onWait) {
       for (let i = 0; i < 12; i++) {
-        try { const r = await call({ action: "claim", session }); setLicense(r.license); return true; }
+        try { const r = await call({ action: "claim", session }); setLicense(r.license, r.at || Date.now()); return true; }
         catch (e) { if (!e.pending) throw e; if (onWait) onWait(i); await new Promise(r => setTimeout(r, 2500)); }
       }
       throw new Error("Your payment went through, but confirmation is taking longer than usual. Use Restore purchase with your email in a few minutes.");
     },
-    async restore(email) { const r = await call({ action: "restore", email }); setLicense(r.license); return true; },
+    async restore(email) { const r = await call({ action: "restore", email }); setLicense(r.license, r.at); return true; },
+    // for the "Your purchase" panel
+    purchase() {
+      if (!license) return null;
+      const sid = license.split(".")[1] || "";
+      return { order: sid.slice(-8).toUpperCase(), at: Number(get("hm:purchasedAt")) || null, test: sid.startsWith("cs_test_") };
+    },
+    wasRevoked: () => revoked,
+    verify: () => verifyLicense(true),
     // carried in backups and the encrypted account copy
     exportMeta: () => ({ license }),
     refresh: () => emit(),
