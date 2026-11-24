@@ -5,10 +5,10 @@
 (() => {
   // Paste the Stripe Payment Link here (it's a public URL). Set its "after payment" redirect to
   // https://healthyscan.net/?paid={CHECKOUT_SESSION_ID}
-  const PAYMENT_LINK = "";
+  const PAYMENT_LINK = "https://buy.stripe.com/eVq5kx17EcRM5ljfSoao800";
   // When payments go live, set this to that moment (ms). Trials count from launch or first use,
   // whichever is later, so early visitors aren't locked out on day one.
-  const LAUNCH = 0;
+  const LAUNCH = 1795486164778;   // 2026-11-24T02:09Z: trials count from here
   const PRICE = "$9.99";
   const TRIAL_DAYS = 3;
   const K_START = "hm:trialStart", K_LIC = "hm:license";
