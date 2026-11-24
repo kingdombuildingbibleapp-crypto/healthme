@@ -9,10 +9,23 @@
     { id: "smart-demo", name: "Demo hospital (test patient)", sub: "SMART Health IT public sandbox. No real data.",
       iss: "https://launch.smarthealthit.org/v/r4/fhir", clientId: "healthyscan-demo" },
     { id: "epic-sandbox", name: "Epic test patients", sub: "Epic's developer sandbox. Needs HealthyScan's Epic client ID.",
-      iss: "https://fhir.epic.com/interconnect-fhir-oauth/api/FHIR/R4", clientId: "" },
+      iss: "https://fhir.epic.com/interconnect-fhir-oauth/api/FHIR/R4", clientId: "d8dc09e3-d0c4-4231-93e3-e8a9a8765c00" },
   ];
+  // Epic production client ID: works at any Epic health system once Epic distributes HealthyScan to it.
+  const EPIC_PROD_CLIENT_ID = "edb93b23-8956-43af-98a5-cc4c7fba14f9";
+  // Epic's public directory of patient-facing FHIR endpoints (https://open.epic.com/Endpoints/R4)
+  let orgs = null;
+  async function loadOrgs() {
+    if (orgs) return orgs;
+    const r = await fetch("/js/epic-orgs.json"); orgs = await r.json(); return orgs;
+  }
+  function searchOrgs(q) {
+    const words = String(q || "").toLowerCase().split(/\s+/).filter(Boolean);
+    if (!orgs || !words.length) return [];
+    return orgs.filter(o => { const n = o.n.toLowerCase(); return words.every(w => n.includes(w)); }).slice(0, 12);
+  }
   // Used for "Other health system" (any SMART on FHIR R4 endpoint) once production client IDs exist.
-  const DEFAULT_CLIENT_ID = "";
+  const DEFAULT_CLIENT_ID = EPIC_PROD_CLIENT_ID;
 
   const SCOPE = [
     "openid", "fhirUser", "launch/patient",
@@ -44,7 +57,7 @@
     const pending = JSON.parse(sessionStorage.getItem(PENDING) || "null");
     sessionStorage.removeItem(PENDING);
     const params = new URLSearchParams(location.search);
-    const clean = () => history.replaceState(null, "", location.pathname);
+    const clean = () => window.history.replaceState(null, "", location.pathname);
     if (params.get("error")) { clean(); throw new Error(params.get("error_description") || params.get("error")); }
     await loadLib();
     let client;
@@ -117,5 +130,5 @@
     return lines.join("\n");
   }
 
-  window.HM_EHR = { PROVIDERS, DEFAULT_CLIENT_ID, SCOPE, connect, isReturning, complete, toText };
+  window.HM_EHR = { PROVIDERS, DEFAULT_CLIENT_ID, EPIC_PROD_CLIENT_ID, SCOPE, connect, isReturning, complete, toText, loadOrgs, searchOrgs };
 })();

@@ -680,3 +680,7 @@ dialog.sheet > .explain-btn { width: calc(100% - 40px); }
 .pay-list.compact { margin: 12px 0 4px; gap: 6px; } .pay-list.compact li { font-weight: 600; font-size: .95rem; }
 .plan-pill.ok { cursor: pointer; }
 #refundBtn { display: flex; justify-content: center; text-decoration: none; }
+.ehr-results { display: grid; gap: 6px; margin: 8px 0; max-height: 300px; overflow-y: auto; }
+.ehr-org { display: grid; gap: 2px; padding: 12px 14px; border-radius: 14px; border: 1.5px solid var(--line, rgba(0,0,0,.08)); background: var(--glass-strong, #fff); text-align: left; font: inherit; color: var(--ink); cursor: pointer; }
+.ehr-org small { color: var(--ink-2); font-size: .8rem; }
+.ehr-test { margin-top: 10px; } .ehr-test summary { cursor: pointer; font-weight: 700; color: var(--accent); margin-bottom: 8px; }

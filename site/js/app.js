@@ -1242,26 +1242,40 @@
   // ---------- patient portal (SMART on FHIR) ----------
   function renderEhrList() {
     const E = window.HM_EHR;
-    const rows = E.PROVIDERS.map((p, i) => `<button class="ehr-opt" data-i="${i}" ${p.clientId ? "" : "disabled"}>
-        <b>${esc(p.name)}</b><small>${esc(p.clientId ? p.sub : p.sub + " Available after registration.")}</small></button>`).join("");
-    $("ehrList").innerHTML = rows + `<form class="ehr-other" id="ehrOther">
-        <label class="field-label" for="ehrIss">Other health system (FHIR address)</label>
-        <input class="field mono small-mono" id="ehrIss" type="url" placeholder="https://…/api/FHIR/R4" required>
-        <button class="btn wide" type="submit" ${E.DEFAULT_CLIENT_ID ? "" : "disabled"}>${E.DEFAULT_CLIENT_ID ? "Connect" : "Available after registration"}</button></form>`;
+    $("ehrList").innerHTML = `<form class="ehr-find" id="ehrFind" autocomplete="off">
+        <label class="field-label" for="ehrQ">Find your health system</label>
+        <input class="field" id="ehrQ" type="search" placeholder="e.g. Novant, Atrium, Duke, Kaiser" enterkeyhint="search">
+        <div class="ehr-results" id="ehrResults"></div>
+        <p class="picker-hint">Works with Epic MyChart portals. You'll sign in on your health system's own page. HealthyScan never sees your password.</p>
+      </form>
+      <details class="ehr-test"><summary>Try it with a test patient</summary>` +
+      E.PROVIDERS.map((p, i) => `<button class="ehr-opt" data-i="${i}" ${p.clientId ? "" : "disabled"}><b>${esc(p.name)}</b><small>${esc(p.sub)}</small></button>`).join("") +
+      `<p class="picker-hint">Epic test login: <span class="mono">fhircamila</span> / <span class="mono">epicepic1</span></p></details>`;
+    E.loadOrgs().catch(() => {});
   }
-  $("ehrBtn").addEventListener("click", () => { renderEhrList(); $("ehrList").hidden = !$("ehrList").hidden; });
+  $("ehrBtn").addEventListener("click", () => { renderEhrList(); $("ehrList").hidden = !$("ehrList").hidden; if (!$("ehrList").hidden) setTimeout(() => $("ehrQ")?.focus(), 50); });
+  $("ehrList").addEventListener("input", async e => {
+    if (e.target.id !== "ehrQ") return;
+    const E = window.HM_EHR; try { await E.loadOrgs(); } catch {}
+    const q = e.target.value, hits = E.searchOrgs(q);
+    $("ehrResults").innerHTML = !q.trim() ? "" : hits.length
+      ? hits.map(o => `<button type="button" class="ehr-org" data-u="${esc(o.u)}" data-n="${esc(o.n)}"><b>${esc(o.n)}</b><small>MyChart · Epic</small></button>`).join("")
+      : `<p class="picker-hint">No Epic health system matches "${esc(q)}". If yours uses another system, upload a record instead.</p>`;
+  });
+  $("ehrList").addEventListener("submit", e => e.preventDefault());
   $("ehrList").addEventListener("click", async e => {
+    const org = e.target.closest(".ehr-org");
+    if (org) {
+      recordStatus('<span class="spinner"></span>Opening ' + esc(org.dataset.n) + ' sign-in…');
+      try { await window.HM_EHR.connect({ iss: org.dataset.u, clientId: window.HM_EHR.EPIC_PROD_CLIENT_ID, name: org.dataset.n }, P.active().id); }
+      catch { recordStatus(`Couldn't open ${esc(org.dataset.n)}'s sign-in. HealthyScan may not be active there yet. Try again later, or upload a record instead.`, true); }
+      return;
+    }
     const b = e.target.closest(".ehr-opt"); if (!b || b.disabled) return;
     const p = window.HM_EHR.PROVIDERS[Number(b.dataset.i)];
     recordStatus('<span class="spinner"></span>Opening ' + esc(p.name) + ' sign-in…');
     try { await window.HM_EHR.connect(p, P.active().id); }
     catch (err) { recordStatus(String(err.message || err) === "no-client-id" ? "This portal isn't connected yet." : "Couldn't reach that patient portal. Check your connection and try again.", true); }
-  });
-  $("ehrList").addEventListener("submit", async e => {
-    e.preventDefault();
-    const iss = $("ehrIss").value.trim();
-    try { await window.HM_EHR.connect({ iss, clientId: window.HM_EHR.DEFAULT_CLIENT_ID, name: new URL(iss).hostname }, P.active().id); }
-    catch { recordStatus("Couldn't reach that address. Check it's a SMART on FHIR R4 endpoint.", true); }
   });
   async function finishEhrImport() {
     if (!window.HM_EHR || !window.HM_EHR.isReturning()) return;
